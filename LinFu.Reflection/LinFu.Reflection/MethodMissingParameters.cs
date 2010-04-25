@@ -1,22 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace LinFu.Reflection
 {
     public class MethodMissingParameters
     {
-        private string _name;
-        private object _target;
-        private object[] _args;
-        private object _returnValue;
-        private bool _handled = false;
+        private readonly object[] _args;
+        private readonly string _name;
+        private readonly object _target;
+
         public MethodMissingParameters(string name, object target, object[] args)
         {
             _name = name;
             _target = target;
             _args = args;
         }
+
         public string MethodName
         {
             get { return _name; }
@@ -32,16 +28,8 @@ namespace LinFu.Reflection
             get { return _args; }
         }
 
-        public bool Handled
-        {
-            get { return _handled; }
-            set { _handled = value; }
-        }
+        public bool Handled { get; set; }
 
-        public object ReturnValue
-        {
-            get { return _returnValue; }
-            set { _returnValue = value; }
-        }
+        public object ReturnValue { get; set; }
     }
 }

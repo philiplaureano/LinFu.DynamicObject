@@ -117,8 +117,9 @@ namespace LinFu.Reflection.Tests
             builder.ArgumentTypes.AddRange(argumentTypes);
             builder.MatchParameterTypes = true;
 
-            FindMatch(.88);
+            FindMatch(.66);
         }
+
         private void RunTest()
         {
             Predicate<MethodInfo> predicate = builder.CreatePredicate();

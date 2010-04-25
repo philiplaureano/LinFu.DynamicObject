@@ -1,23 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using LinFu.Common;
 using LinFu.Delegates;
 
 namespace LinFu.Reflection
 {
     internal class Binder : IObjectMethods, IObjectProperties
     {
-        private object _target;
+        private readonly DynamicObject _dynamicObject;
         private readonly IMethodFinder _finder;
-        private DynamicObject _dynamicObject;
+        private readonly object _target;
+
         public Binder(object target, IMethodFinder finder, DynamicObject dynamicObject)
         {
             _target = target;
             _finder = finder;
             _dynamicObject = dynamicObject;
         }
+
         #region IObjectMethods Members
 
         public CustomDelegate this[string methodName]
@@ -25,43 +24,42 @@ namespace LinFu.Reflection
             get
             {
                 CustomDelegate result = delegate(object[] args)
-                                             {
-                                                 if (_target == null)
-                                                     throw new NullReferenceException("No target instance found!");
+                                            {
+                                                if (_target == null)
+                                                    throw new NullReferenceException("No target instance found!");
 
-                                                 MethodInfo bestMatch =
-                                                     _finder.Find(methodName, _target.GetType(), args);
+                                                MethodInfo bestMatch =
+                                                    _finder.Find(methodName, _target.GetType(), args);
 
-                                                 object returnValue = null;
-                                                 
-                                                 if (bestMatch == null)
-                                                 {
-                                                     bool handled = false;
-                                                     returnValue = _dynamicObject.ExecuteMethodMissing(methodName, args, ref handled);                                                     
-                                                     if (handled)
-                                                         return returnValue;
+                                                object returnValue = null;
 
-                                                     throw new NotImplementedException();
-                                                 }
+                                                if (bestMatch == null)
+                                                {
+                                                    bool handled = false;
+                                                    returnValue = _dynamicObject.ExecuteMethodMissing(methodName, args,
+                                                                                                      ref handled);
+                                                    if (handled)
+                                                        return returnValue;
 
-                                                 try
-                                                 {
-                                                     returnValue = bestMatch.Invoke(_target, args);
-                                                 }
-                                                 catch (TargetInvocationException ex)
-                                                 {
-                                                     throw ex.InnerException;
-                                                 }
+                                                    throw new NotImplementedException();
+                                                }
 
-                                                 return returnValue;
-                                             };
+                                                try
+                                                {
+                                                    returnValue = bestMatch.Invoke(_target, args);
+                                                }
+                                                catch (TargetInvocationException ex)
+                                                {
+                                                    throw ex.InnerException;
+                                                }
+
+                                                return returnValue;
+                                            };
                 return result;
             }
         }
 
         #endregion
-
-
 
         #region IObjectProperties Members
 

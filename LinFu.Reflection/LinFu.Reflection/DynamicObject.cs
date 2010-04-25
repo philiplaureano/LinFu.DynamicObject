@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using LinFu.Common;
 using LinFu.Delegates;
 using LinFu.DynamicProxy;
@@ -10,10 +9,11 @@ namespace LinFu.Reflection
 {
     public class DynamicObject : IMethodMissingCallback, IInterceptor
     {
-        private object _target;
+        private readonly ProxyFactory _factory;
         private readonly IMethodFinder _finder = new MethodFinder();
         private readonly List<IMethodMissingCallback> _handlers = new List<IMethodMissingCallback>();
-        private readonly ProxyFactory _factory;
+        private object _target;
+
         public DynamicObject()
         {
             _target = new object();
@@ -25,7 +25,9 @@ namespace LinFu.Reflection
             Target = target;
             _factory = new ProxyFactory();
         }
+
         #region User-Defined Operators
+
         public static DynamicObject operator -(DynamicObject lhs, IMethodMissingCallback callback)
         {
             if (lhs._handlers.Contains(callback))
@@ -33,35 +35,94 @@ namespace LinFu.Reflection
 
             return lhs;
         }
+
         public static DynamicObject operator +(DynamicObject lhs, IMethodMissingCallback callback)
         {
             lhs._handlers.Add(callback);
 
             return lhs;
         }
-        
+
         #endregion
 
         public IObjectMethods Methods
         {
-            get
-            {
-                return new Binder(_target, _finder, this);
-            }
+            get { return new Binder(_target, _finder, this); }
         }
 
         public IObjectProperties Properties
         {
-            get
-            {
-                return new Binder(_target, _finder, this);
-            }
+            get { return new Binder(_target, _finder, this); }
         }
+
         public object Target
         {
             get { return _target; }
             set { _target = value; }
         }
+
+        #region IInterceptor Members
+
+        public object Intercept(InvocationInfo info)
+        {
+            return Methods[info.TargetMethod.Name](info.Arguments);
+        }
+
+        #endregion
+
+        #region IMethodMissingCallback Members
+
+        public void MethodMissing(object source, MethodMissingParameters missingParameters)
+        {
+            bool handled = false;
+            object result = null;
+            try
+            {
+                result = Methods[missingParameters.MethodName](missingParameters.Arguments);
+                handled = true;
+            }
+            catch (Exception ex)
+            {
+                handled = false;
+            }
+            missingParameters.Handled = handled;
+
+            if (handled)
+                missingParameters.ReturnValue = result;
+        }
+
+        public bool CanHandle(MethodInfo method)
+        {
+            Predicate<MethodInfo> predicate = PredicateBuilder.CreatePredicate(method);
+            var finder = new FuzzyFinder<MethodInfo>();
+            finder.Tolerance = .66;
+
+            Type targetType = _target.GetType();
+
+
+            MethodInfo[] searchPool =
+                targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            // Find a method that can handle this particular method signature
+            MethodInfo match = finder.Find(predicate, searchPool);
+
+            if (match != null)
+                return true;
+
+            bool found = false;
+            foreach (IMethodMissingCallback callback in _handlers)
+            {
+                if (!callback.CanHandle(method))
+                    continue;
+
+                found = true;
+                break;
+            }
+            return found;
+        }
+
+        #endregion
+
         internal object ExecuteMethodMissing(string methodName, object[] args, ref bool handled)
         {
             if (_handlers.Count == 0)
@@ -72,7 +133,7 @@ namespace LinFu.Reflection
             // Emulate Ruby's MethodMissing behavior
             // so that methods can be added to this 
             // class at runtime
-            MethodMissingParameters missingParameters =
+            var missingParameters =
                 new MethodMissingParameters(methodName, _target, args);
 
             // Fire the event until a handler is found 
@@ -98,15 +159,16 @@ namespace LinFu.Reflection
         {
             _handlers.Add(new DelegateMixin(methodName, body));
         }
-        public void AddMethod(string methodName, CustomDelegate body, Type returnType, Type[] parameters)
+
+        public void AddMethod(string methodName, CustomDelegate body, Type returnType, params Type[] parameters)
         {
-            
             MulticastDelegate stronglyTypedDelegate = DelegateFactory.DefineDelegate(body, returnType, parameters);
             if (stronglyTypedDelegate == null)
                 return;
 
             AddMethod(methodName, stronglyTypedDelegate);
         }
+
         public void MixWith(object otherInstance)
         {
             if (otherInstance == null)
@@ -114,7 +176,7 @@ namespace LinFu.Reflection
 
             if (otherInstance is DynamicObject)
             {
-                DynamicObject other = (DynamicObject) otherInstance;
+                var other = (DynamicObject) otherInstance;
                 _handlers.Add(other);
                 return;
             }
@@ -124,41 +186,44 @@ namespace LinFu.Reflection
             MethodInfo[] methods =
                 targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            foreach(MethodInfo method in methods)
+            foreach (MethodInfo method in methods)
             {
                 if (method.IsGenericMethodDefinition)
                     continue;
 
                 // Ignore anything declared on System.Object
-                if (method.DeclaringType == typeof(object))
+                if (method.DeclaringType == typeof (object))
                     continue;
-                if (method.DeclaringType == typeof(IMixinAware))
+                if (method.DeclaringType == typeof (IMixinAware))
                     continue;
 
                 Type delegateType =
                     DelegateFactory.DefineDelegateType("__AnonymousDelegate",
                                                        method.ReturnType, method.GetParameters());
-                
+
                 // Bind it to the new delegate
                 IntPtr methodPointer = method.MethodHandle.GetFunctionPointer();
-                MulticastDelegate delegateInstance = Activator.CreateInstance(delegateType, new object[] { otherInstance, methodPointer }) as MulticastDelegate;
+                var delegateInstance =
+                    Activator.CreateInstance(delegateType, new[] {otherInstance, methodPointer}) as MulticastDelegate;
 
                 // Mix the new delegate in with everything else
                 AddMethod(method.Name, delegateInstance);
             }
-            
+
             // Introduce the dynamic object with the mixin
-            IMixinAware mixin = otherInstance as IMixinAware;
+            var mixin = otherInstance as IMixinAware;
             if (mixin == null)
                 return;
 
             mixin.Self = this;
         }
+
         public bool LooksLike<T>()
             where T : class
         {
             return LooksLike(typeof (T));
         }
+
         public bool LooksLike(Type comparisonType)
         {
             if (_target == null)
@@ -167,12 +232,12 @@ namespace LinFu.Reflection
             Type targetType = _target.GetType();
 
             // Build the list of methods to compare against
-            List<MethodInfo> methodPool = new List<MethodInfo>();
+            var methodPool = new List<MethodInfo>();
 
             // Add the methods native to the type
             methodPool.AddRange(targetType.GetMethods(BindingFlags.Public | BindingFlags.Instance));
 
-            FuzzyFinder<MethodInfo> finder = new FuzzyFinder<MethodInfo>();
+            var finder = new FuzzyFinder<MethodInfo>();
             finder.Tolerance = .66;
 
             MethodInfo[] comparisonTypeMethods = comparisonType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
@@ -181,7 +246,7 @@ namespace LinFu.Reflection
             foreach (MethodInfo method in comparisonTypeMethods)
             {
                 // Search for a similar method
-                Predicate<MethodInfo> predicate = PredicateBuilder.CreatePredicate(method);                
+                Predicate<MethodInfo> predicate = PredicateBuilder.CreatePredicate(method);
                 MethodInfo compatibleMethod = finder.Find(predicate, methodPool);
                 if (compatibleMethod != null)
                     continue;
@@ -206,11 +271,12 @@ namespace LinFu.Reflection
 
             return result;
         }
+
         public T CreateDuck<T>(params Type[] baseInterfaces)
             where T : class
         {
             IInterceptor interceptor = new DuckType(this);
-            T result = _factory.CreateProxy<T>(interceptor, baseInterfaces);
+            var result = _factory.CreateProxy<T>(interceptor, baseInterfaces);
             return result;
         }
 
@@ -220,66 +286,5 @@ namespace LinFu.Reflection
             object result = _factory.CreateProxy(duckType, interceptor, baseInterfaces);
             return result;
         }
-        #region IMethodMissingCallback Members
-
-        public void MethodMissing(object source, MethodMissingParameters missingParameters)
-        {
-            bool handled = false;
-            object result = null;
-            try
-            {
-                result = Methods[missingParameters.MethodName](missingParameters.Arguments);
-                handled = true;
-            }
-            catch(Exception ex)
-            {
-                handled = false;
-            }
-            missingParameters.Handled = handled;
-            
-            if (handled)
-                missingParameters.ReturnValue = result;
-        }
-
-        public bool CanHandle(MethodInfo method)
-        {
-            Predicate<MethodInfo> predicate = PredicateBuilder.CreatePredicate(method);
-            FuzzyFinder<MethodInfo> finder = new FuzzyFinder<MethodInfo>();
-            finder.Tolerance = .66;
-
-            Type targetType = _target.GetType();
-
-            
-            MethodInfo[] searchPool =
-                targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            
-            // Find a method that can handle this particular method signature
-            MethodInfo match = finder.Find(predicate, searchPool);
-
-            if (match != null)
-                return true;
-
-            bool found = false;
-            foreach(IMethodMissingCallback callback in _handlers)
-            {
-                if (!callback.CanHandle(method))
-                    continue;
-                
-                found = true;
-                break;
-            }
-            return found;
-        }
-
-        #endregion
-
-        #region IInterceptor Members
-
-        public object Intercept(InvocationInfo info)
-        {
-            return Methods[info.TargetMethod.Name](info.Arguments);
-        }
-
-        #endregion
     }
 }

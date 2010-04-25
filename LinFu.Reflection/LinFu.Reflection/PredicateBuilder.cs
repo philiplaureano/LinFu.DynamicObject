@@ -1,34 +1,34 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace LinFu.Reflection
 {
     public class PredicateBuilder
     {
-        private bool _matchCovariantReturnType;
-        private bool _matchCovariantParameterTypes;
-        private bool _matchRuntimeArguments;
-        private bool? _isPublic;
+        private readonly List<Type> _argumentTypes = new List<Type>();
+        private readonly List<object> _arguments = new List<object>();
+        private readonly List<ParameterInfo> _parameterTypes = new List<ParameterInfo>();
+        private readonly List<Type> _typeArguments = new List<Type>();
         private bool? _isProtected;
-        private bool _matchParameterTypes;
+        private bool? _isPublic;
+        private bool _matchCovariantParameterTypes;
+        private bool _matchCovariantReturnType;
+        private bool _matchParameters = true;
+        private bool _matchRuntimeArguments;
         private string _methodName;
         private Type _returnType;
-        private readonly List<Type> _argumentTypes = new List<Type>();
-        private readonly List<Type> _typeArguments = new List<Type>();
-        private readonly List<ParameterInfo> _parameterTypes = new List<ParameterInfo>();
-        private readonly List<object> _arguments = new List<object>();
-        private bool _matchParameters = true;
 
         public List<Type> ArgumentTypes
         {
             get { return _argumentTypes; }
-        } 
+        }
+
         public List<object> RuntimeArguments
         {
             get { return _arguments; }
         }
+
         public string MethodName
         {
             get { return _methodName; }
@@ -75,11 +75,8 @@ namespace LinFu.Reflection
             set { _matchParameters = value; }
         }
 
-        public bool MatchParameterTypes
-        {
-            get { return _matchParameterTypes; }
-            set { _matchParameterTypes = value; }
-        }
+        public bool MatchParameterTypes { get; set; }
+
         public bool MatchCovariantParameterTypes
         {
             get { return _matchCovariantParameterTypes; }
@@ -91,9 +88,10 @@ namespace LinFu.Reflection
             get { return _matchRuntimeArguments; }
             set { _matchRuntimeArguments = value; }
         }
+
         public static Predicate<MethodInfo> CreatePredicate(MethodInfo method)
         {
-            PredicateBuilder builder = new PredicateBuilder();
+            var builder = new PredicateBuilder();
             builder.MatchParameters = true;
             builder.MethodName = method.Name;
 
@@ -116,46 +114,42 @@ namespace LinFu.Reflection
 
             return predicate;
         }
+
         public Predicate<MethodInfo> CreatePredicate()
         {
             Predicate<MethodInfo> result = null;
 
             #region Match the method name
+
             if (!string.IsNullOrEmpty(_methodName))
             {
                 Predicate<MethodInfo> shouldMatchMethodName =
-                    delegate(MethodInfo method)
-                    {
-                        return method.Name == _methodName;
-                    };
+                    delegate(MethodInfo method) { return method.Name == _methodName; };
 
                 // Results that match the method name will get a higher
                 // score
                 result += shouldMatchMethodName;
                 result += shouldMatchMethodName;
             }
+
             #endregion
 
             #region Match the return type
+
             if (_returnType != null)
             {
-                result += delegate(MethodInfo method)
-                              {
-                                  return method.ReturnType == _returnType;
-                              };
+                result += delegate(MethodInfo method) { return method.ReturnType == _returnType; };
 
                 if (_matchCovariantReturnType)
                 {
-                    result += delegate(MethodInfo method)
-                              {
-                                  return method.ReturnType.IsAssignableFrom(_returnType);
-                              };
+                    result += delegate(MethodInfo method) { return method.ReturnType.IsAssignableFrom(_returnType); };
                 }
             }
+
             #endregion
 
-
             #region Match the parameters
+
             if (_matchParameters && _parameterTypes.Count > 0)
             {
                 Predicate<MethodInfo> hasParameterTypes = null;
@@ -177,7 +171,8 @@ namespace LinFu.Reflection
                 {
                     int position = param.Position;
                     Type parameterType = param.ParameterType;
-                    Predicate<MethodInfo> hasParameter = MakeParameterPredicate(position, parameterType, _matchCovariantParameterTypes);
+                    Predicate<MethodInfo> hasParameter = MakeParameterPredicate(position, parameterType,
+                                                                                _matchCovariantParameterTypes);
 
                     hasParameterTypes += hasParameter;
                 }
@@ -199,9 +194,11 @@ namespace LinFu.Reflection
                                   return parameterCount == 0;
                               };
             }
+
             #endregion
 
             #region Match the generic type parameters
+
             if (_typeArguments.Count > 0)
             {
                 Predicate<MethodInfo> matchesTypeParameters = null;
@@ -242,29 +239,29 @@ namespace LinFu.Reflection
                                   return parameterCount == 0;
                               };
             }
+
             #endregion
 
             #region Match public methods
+
             if (_isPublic != null && _isPublic.HasValue)
             {
-                result += delegate(MethodInfo method)
-                              {
-                                  return method.IsPublic == _isPublic;
-                              };
+                result += delegate(MethodInfo method) { return method.IsPublic == _isPublic; };
             }
+
             #endregion
 
             #region Match protected methods
+
             if (_isProtected != null && _isProtected.HasValue)
             {
-                result += delegate(MethodInfo method)
-                              {
-                                  return method.IsFamily == _isProtected;
-                              };
+                result += delegate(MethodInfo method) { return method.IsFamily == _isProtected; };
             }
+
             #endregion
 
             #region Match the runtime arguments
+
             if (_arguments.Count > 0 && MatchRuntimeArguments)
             {
                 int position = 0;
@@ -290,9 +287,11 @@ namespace LinFu.Reflection
                                   return parameterCount == 0;
                               };
             }
+
             #endregion
 
             #region Match the parameter types
+
             if (MatchParameterTypes && _argumentTypes.Count > 0)
             {
                 int position = 0;
@@ -302,33 +301,37 @@ namespace LinFu.Reflection
                     position++;
                 }
             }
+
             #endregion
+
             return result;
         }
 
         private static Predicate<MethodInfo>
             MakeParameterPredicate(int position, Type parameterType, bool covariant)
         {
-
             Predicate<MethodInfo> result = delegate(MethodInfo method)
-                       {
-                           ParameterInfo[] parameters = method.GetParameters();
+                                               {
+                                                   ParameterInfo[] parameters = method.GetParameters();
 
-                           bool checkResult = false;
-                           try
-                           {
-                               if (!covariant)
-                                   checkResult = parameters[position].ParameterType == parameterType;
+                                                   bool checkResult = false;
+                                                   try
+                                                   {
+                                                       if (!covariant)
+                                                           checkResult = parameters[position].ParameterType ==
+                                                                         parameterType;
 
-                               if (covariant)
-                                   checkResult = parameters[position].ParameterType.IsAssignableFrom(parameterType);
-                           }
-                           catch
-                           {
-                               // Ignore any errors that occur
-                           }
-                           return checkResult;
-                       };
+                                                       if (covariant)
+                                                           checkResult =
+                                                               parameters[position].ParameterType.IsAssignableFrom(
+                                                                   parameterType);
+                                                   }
+                                                   catch
+                                                   {
+                                                       // Ignore any errors that occur
+                                                   }
+                                                   return checkResult;
+                                               };
 
             return result;
         }

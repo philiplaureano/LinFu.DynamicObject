@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using LinFu.DynamicProxy;
 
 namespace LinFu.Reflection
@@ -8,6 +5,7 @@ namespace LinFu.Reflection
     internal class DuckType : Interceptor
     {
         private readonly DynamicObject _target;
+
         public DuckType(DynamicObject target)
         {
             _target = target;

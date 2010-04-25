@@ -11,6 +11,20 @@ namespace LinFu.Reflection.Tests
     public class DynamicObjectTests : BaseFixture 
     {
         [Test]
+        public void ShouldBeAbleToUseCLRDynamicObjectsAsExpandoObjects()
+        {
+            CustomDelegate body = args => 42;
+
+            var dynamicObject = new LinFu.Reflection.DynamicObject(new object());
+            dynamicObject.AddMethod("GetFoo", body, typeof(int));
+
+            dynamic expando = dynamicObject.AsExpandoObject();
+
+            int result = expando.GetFoo();
+            Assert.AreEqual(42, result);
+        }
+
+        [Test]
         public void ShouldCallTargetMethod()
         {
             string methodName = "TargetMethod";
