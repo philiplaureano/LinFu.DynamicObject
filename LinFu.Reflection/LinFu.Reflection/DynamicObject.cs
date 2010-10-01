@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using LinFu.Common;
 using LinFu.Delegates;
 using LinFu.DynamicProxy;
+using LinFu.Finders;
 
 namespace LinFu.Reflection
 {
@@ -93,24 +93,20 @@ namespace LinFu.Reflection
 
         public bool CanHandle(MethodInfo method)
         {
-            Predicate<MethodInfo> predicate = PredicateBuilder.CreatePredicate(method);
-            var finder = new FuzzyFinder<MethodInfo>();
-            finder.Tolerance = .66;
-
-            Type targetType = _target.GetType();
-
-
-            MethodInfo[] searchPool =
+            var targetType = _target.GetType();
+            var searchPool =
                 targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
+            var searchList = searchPool.AsFuzzyList();
+            PredicateBuilder.AddPredicates(searchList, method);
             // Find a method that can handle this particular method signature
-            MethodInfo match = finder.Find(predicate, searchPool);
+            var match = searchList.BestMatch(.66);
 
             if (match != null)
                 return true;
 
-            bool found = false;
-            foreach (IMethodMissingCallback callback in _handlers)
+            var found = false;
+            foreach (var callback in _handlers)
             {
                 if (!callback.CanHandle(method))
                     continue;
@@ -118,6 +114,7 @@ namespace LinFu.Reflection
                 found = true;
                 break;
             }
+
             return found;
         }
 
@@ -236,9 +233,9 @@ namespace LinFu.Reflection
 
             // Add the methods native to the type
             methodPool.AddRange(targetType.GetMethods(BindingFlags.Public | BindingFlags.Instance));
-
-            var finder = new FuzzyFinder<MethodInfo>();
-            finder.Tolerance = .66;
+            var searchPool = methodPool.AsFuzzyList();
+            //var finder = new FuzzyFinder<MethodInfo>();
+            //finder.Tolerance = .66;
 
             MethodInfo[] comparisonTypeMethods = comparisonType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
@@ -246,12 +243,16 @@ namespace LinFu.Reflection
             foreach (MethodInfo method in comparisonTypeMethods)
             {
                 // Search for a similar method
-                Predicate<MethodInfo> predicate = PredicateBuilder.CreatePredicate(method);
-                MethodInfo compatibleMethod = finder.Find(predicate, methodPool);
+                searchPool.Reset();                
+                PredicateBuilder.AddPredicates(searchPool, method);
+                
+                var bestMatch = searchPool.BestMatch(.66);
+                var compatibleMethod = bestMatch.Item;
                 if (compatibleMethod != null)
                     continue;
 
                 bool canHandleMethod = false;
+
                 // If the search fails, we need to query for a replacement
                 foreach (IMethodMissingCallback callback in _handlers)
                 {

@@ -61,6 +61,9 @@
     <Reference Include="LinFu.DynamicProxy">
       <HintPath>..\..\lib\LinFu.DynamicProxy.dll</HintPath>
     </Reference>
+    <Reference Include="LinFu.Finders">
+      <HintPath>..\..\lib\LinFu.Finders.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NMock2">
       <HintPath>..\..\lib\NMock2.dll</HintPath>
@@ -79,6 +82,7 @@
   <ItemGroup>
     <Compile Include="BaseFixture.cs" />
     <Compile Include="DynamicObjectTests.cs" />
+    <Compile Include="ExpandoObjectTests.cs" />
     <Compile Include="FirstClass.cs" />
     <Compile Include="IDuck.cs" />
     <Compile Include="IntegerOperation.cs" />
@@ -91,10 +95,6 @@
     <Compile Include="SecondClass.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\LinFu.Common\LinFu.Common.csproj">
-      <Project>{12E74908-C9CF-45CB-A996-7784846C3A53}</Project>
-      <Name>LinFu.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\LinFu.Delegates\LinFu.Delegates\LinFu.Delegates.csproj">
       <Project>{65A26586-FE64-411D-999D-EC328DFF8986}</Project>
       <Name>LinFu.Delegates</Name>

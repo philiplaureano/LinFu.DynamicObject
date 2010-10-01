@@ -17,51 +17,47 @@ namespace LinFu.Reflection
             _dynamicObject = dynamicObject;
         }
 
-        #region IObjectMethods Members
-
         public CustomDelegate this[string methodName]
         {
             get
             {
-                CustomDelegate result = delegate(object[] args)
-                                            {
-                                                if (_target == null)
-                                                    throw new NullReferenceException("No target instance found!");
-
-                                                MethodInfo bestMatch =
-                                                    _finder.Find(methodName, _target.GetType(), args);
-
-                                                object returnValue = null;
-
-                                                if (bestMatch == null)
-                                                {
-                                                    bool handled = false;
-                                                    returnValue = _dynamicObject.ExecuteMethodMissing(methodName, args,
-                                                                                                      ref handled);
-                                                    if (handled)
-                                                        return returnValue;
-
-                                                    throw new NotImplementedException();
-                                                }
-
-                                                try
-                                                {
-                                                    returnValue = bestMatch.Invoke(_target, args);
-                                                }
-                                                catch (TargetInvocationException ex)
-                                                {
-                                                    throw ex.InnerException;
-                                                }
-
-                                                return returnValue;
-                                            };
+                CustomDelegate result = args => Bind(methodName, args);
                 return result;
             }
         }
 
-        #endregion
+        private object Bind(string methodName, object[] args)
+        {
+            if (_target == null)
+                throw new NullReferenceException("No target instance found!");
 
-        #region IObjectProperties Members
+            MethodInfo bestMatch =
+                _finder.Find(methodName, _target.GetType(), args);
+
+            object returnValue = null;
+
+            if (bestMatch == null)
+            {
+                bool handled = false;
+                returnValue = _dynamicObject.ExecuteMethodMissing(methodName, args,
+                                                                  ref handled);
+                if (handled)
+                    return returnValue;
+
+                throw new NotImplementedException();
+            }
+
+            try
+            {
+                returnValue = bestMatch.Invoke(_target, args);
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+
+            return returnValue;
+        }
 
         object IObjectProperties.this[string propertyName]
         {
@@ -78,7 +74,5 @@ namespace LinFu.Reflection
                 methods[methodName](value);
             }
         }
-
-        #endregion
     }
 }

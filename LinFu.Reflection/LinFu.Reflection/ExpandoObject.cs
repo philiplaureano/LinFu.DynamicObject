@@ -33,7 +33,15 @@ namespace LinFu.Reflection
         {
             _target.AddMethod(methodName, methodBody);
         }
-       
+
+        public override bool TrySetMember(SetMemberBinder binder, object value)
+        {
+            var propertyName = binder.Name;
+            var methodName = string.Format("set_{0}", propertyName);
+            _target.Methods[methodName](value);
+            return true;
+        }
+
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {            
             var methodName = binder.Name;

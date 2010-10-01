@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
-using LinFu.Common;
+using LinFu.Finders;
 using NUnit.Framework;
 
 namespace LinFu.Reflection.Tests
@@ -106,6 +106,7 @@ namespace LinFu.Reflection.Tests
 
             FindMatch();
         }
+
         [Test]
         public void ShouldReturnMatchBasedOnReturnTypeAndParameterTypes()
         {
@@ -122,32 +123,31 @@ namespace LinFu.Reflection.Tests
 
         private void RunTest()
         {
-            Predicate<MethodInfo> predicate = builder.CreatePredicate();
-            Assert.IsNotNull(predicate);
+            var methods = new MethodInfo[] {targetMethod};
+            var pool = methods.AsFuzzyList();
 
-            foreach (Predicate<MethodInfo> current in predicate.GetInvocationList())
-            {
-                Assert.IsTrue(current(targetMethod));
-            }
+            builder.AddPredicates(pool);
+            Assert.IsNotNull(pool.BestMatch());
         }
         private void FindMatch()
         {
             FindMatch(.51);
         }
+
         private void FindMatch(double tolerance)
         {
-            // The builder should give a list of predicates
-            // that match the target method
-            Predicate<MethodInfo> predicate = builder.CreatePredicate();
-            FuzzyFinder<MethodInfo> finder = new FuzzyFinder<MethodInfo>();
-            finder.Tolerance = tolerance;
-
-            MethodInfo[] methods =
+            var methods =
                 typeof(MethodFinderTargetDummy).GetMethods(BindingFlags.Public | BindingFlags.NonPublic |
                                                             BindingFlags.Instance);
+            var searchPool = methods.AsFuzzyList();
+            builder.AddPredicates(searchPool);
 
             // Perform the search
-            MethodInfo resultingMethod = finder.Find(predicate, methods);
+            var bestMatch = searchPool.BestMatch(tolerance);
+            Assert.IsNotNull(bestMatch);
+
+            
+            var resultingMethod = bestMatch.Item;
             Assert.IsNotNull(resultingMethod);
 
             // The resulting method and the target method should be the same method

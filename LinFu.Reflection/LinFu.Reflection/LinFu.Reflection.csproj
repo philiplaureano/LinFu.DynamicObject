@@ -62,6 +62,9 @@
     <Reference Include="LinFu.DynamicProxy">
       <HintPath>..\..\lib\LinFu.DynamicProxy.dll</HintPath>
     </Reference>
+    <Reference Include="LinFu.Finders">
+      <HintPath>..\..\lib\LinFu.Finders.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -73,6 +76,7 @@
     <Compile Include="DynamicObject.cs" />
     <Compile Include="DynamicObjectExtensions.cs" />
     <Compile Include="ExpandoObject.cs" />
+    <Compile Include="FunctorExtensions.cs" />
     <Compile Include="IMethodFinder.cs" />
     <Compile Include="IMissingMethodCallback.cs" />
     <Compile Include="IMixinAware.cs" />
@@ -80,15 +84,12 @@
     <Compile Include="IObjectProperties.cs" />
     <Compile Include="LateBoundMethod.cs" />
     <Compile Include="MethodFinder.cs" />
+    <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="MethodMissingParameters.cs" />
     <Compile Include="PredicateBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\LinFu.Common\LinFu.Common.csproj">
-      <Project>{12E74908-C9CF-45CB-A996-7784846C3A53}</Project>
-      <Name>LinFu.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\LinFu.Delegates\LinFu.Delegates\LinFu.Delegates.csproj">
       <Project>{65A26586-FE64-411D-999D-EC328DFF8986}</Project>
       <Name>LinFu.Delegates</Name>

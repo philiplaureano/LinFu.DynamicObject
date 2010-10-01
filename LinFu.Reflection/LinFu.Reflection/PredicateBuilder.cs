@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using LinFu.Finders;
+using LinFu.Finders.Interfaces;
 
 namespace LinFu.Reflection
 {
@@ -12,7 +14,7 @@ namespace LinFu.Reflection
         private readonly List<Type> _typeArguments = new List<Type>();
         private bool? _isProtected;
         private bool? _isPublic;
-        private bool _matchCovariantParameterTypes;
+        private bool _matchCovariantParameterTypes = true;
         private bool _matchCovariantReturnType;
         private bool _matchParameters = true;
         private bool _matchRuntimeArguments;
@@ -89,13 +91,14 @@ namespace LinFu.Reflection
             set { _matchRuntimeArguments = value; }
         }
 
-        public static Predicate<MethodInfo> CreatePredicate(MethodInfo method)
+        public static void AddPredicates(IList<IFuzzyItem<MethodInfo>> list, MethodInfo method)
         {
-            var builder = new PredicateBuilder();
-            builder.MatchParameters = true;
-            builder.MethodName = method.Name;
+            var builder = new PredicateBuilder { MatchParameters = true, MethodName = method.Name, MatchRuntimeArguments = true };
 
-            foreach (ParameterInfo param in method.GetParameters())
+            //if (args != null && args.Length > 0)
+            //    builder.RuntimeArguments.Add(args);
+
+            foreach (var param in method.GetParameters())
             {
                 builder.ParameterTypes.Add(param);
             }
@@ -103,238 +106,312 @@ namespace LinFu.Reflection
             // Match any type arguments
             if (method.IsGenericMethod)
             {
-                foreach (Type current in method.GetGenericArguments())
+                foreach (var current in method.GetGenericArguments())
                 {
                     builder.TypeArguments.Add(current);
                 }
             }
+
             builder.ReturnType = method.ReturnType;
-
-            Predicate<MethodInfo> predicate = builder.CreatePredicate();
-
-            return predicate;
+            builder.AddPredicates(list);
         }
 
-        public Predicate<MethodInfo> CreatePredicate()
+        public void AddPredicates(IList<IFuzzyItem<MethodInfo>> methods)
         {
-            Predicate<MethodInfo> result = null;
+            ShouldMatchMethodName(methods);
+            ShouldMatchParameterTypes(methods);
+            ShouldMatchReturnType(methods);
+            ShouldMatchParameters(methods);
+            ShouldMatchGenericTypeParameters(methods);
+            ShouldMatchPublicMethods(methods);
+            ShouldMatchProtectedMethods(methods);
+            ShouldMatchRuntimeArguments(methods);
+            ShouldMatchParameterTypes(methods);
+        }
 
-            #region Match the method name
+        private void ShouldMatchParameterTypes(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (!MatchParameterTypes || _argumentTypes.Count <= 0)
+                return;
 
-            if (!string.IsNullOrEmpty(_methodName))
+            int position = 0;
+            foreach (Type currentType in _argumentTypes)
             {
-                Predicate<MethodInfo> shouldMatchMethodName =
-                    delegate(MethodInfo method) { return method.Name == _methodName; };
+                var predicate = MakeParameterPredicate(position, currentType, false);
+                methods.AddCriteria(predicate);
+                position++;
+            }
+        }
 
-                // Results that match the method name will get a higher
-                // score
-                result += shouldMatchMethodName;
-                result += shouldMatchMethodName;
+        private void ShouldMatchRuntimeArguments(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (!MatchRuntimeArguments)
+                return;
+
+            if (_arguments.Count > 0 && MatchRuntimeArguments)
+            {
+                int position = 0;
+
+                // Match the individual parameter types
+                var typeMap = new Dictionary<int, Type>();
+                foreach (object argument in _arguments)
+                {
+                    if (argument != null)
+                    {
+                        var argumentType = argument.GetType();
+                        var matchCovariantParameterTypes = _matchCovariantParameterTypes;
+                        AddParameterPredicate(position, argumentType, matchCovariantParameterTypes, methods);
+                        typeMap[position] = argumentType;
+                    }
+                    position++;
+                }
+
+                // Match the exact method signature if possible
+                var compositePredicates = new List<Func<MethodInfo, bool>>();
+                foreach (var currentPosition in typeMap.Keys)
+                {
+                    var currentType = typeMap[currentPosition];
+                    var predicate = MakeParameterPredicate(currentPosition, currentType, true);
+                    compositePredicates.Add(predicate);
+                }
+
+                Func<MethodInfo, bool> hasExactMethodSignature =
+                    method =>
+                    {
+                        if (compositePredicates.Count == 0)
+                            return true;
+
+                        var result = false;
+                        foreach (var predicate in compositePredicates)
+                        {
+                            result = predicate(method);
+                            if (!result)
+                                break;
+                        }
+
+                        return result;
+                    };
+
+                methods.AddCriteria(hasExactMethodSignature, CriteriaType.Standard);
             }
 
-            #endregion
+            Func<MethodInfo, bool> shouldMatchParameterCount = currentMethod =>
+                                                                  {
+                                                                      var currentParameters =
+                                                                          currentMethod.GetParameters();
 
-            #region Match the return type
+                                                                      // Match the parameter count
+                                                                      var parameterCount = currentParameters.Length;
+                                                                      return parameterCount == _arguments.Count;
+                                                                  };
 
-            if (_returnType != null)
+            methods.AddCriteria(shouldMatchParameterCount);
+
+        }
+
+        private void AddParameterPredicate(int position, Type argumentType, bool matchCovariantParameterTypes, IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            // Add a separate criteria for checking for covariant parameter types
+            var hasMatchingParameterType = MakeParameterPredicate(position, argumentType, false);
+            var hasCovariantParameterType = MakeParameterPredicate(position, argumentType, true);
+
+
+            //methods.AddCriteria(hasMatchingParameterType, criteriaType);
+            //methods.AddCriteria(hasCovariantParameterType, CriteriaType.Critical);
+            if (!matchCovariantParameterTypes)
             {
-                result += delegate(MethodInfo method) { return method.ReturnType == _returnType; };
+                Func<MethodInfo, bool> hasExactParameterType =
+                    method => hasCovariantParameterType(method) && hasMatchingParameterType(method);
 
-                if (_matchCovariantReturnType)
+                methods.AddCriteria(hasExactParameterType);
+                return;
+            }
+
+            methods.AddCriteria(hasMatchingParameterType, CriteriaType.Standard);
+            methods.AddCriteria(hasCovariantParameterType, CriteriaType.Critical);
+
+        }
+
+        private static Func<MethodInfo, bool> MakeParameterPredicate(int position, Type parameterType, bool covariant)
+        {
+            Func<MethodInfo, bool> result = method => MatchesParameterType(method, parameterType, position,
+                                                                           covariant);
+
+            return result;
+        }
+
+        private static bool MatchesParameterType(MethodInfo method, Type parameterType, int position, bool covariant)
+        {
+            var parameters = method.GetParameters();
+
+            var checkResult = false;
+            try
+            {
+                var currentParameterType = parameters[position].ParameterType;
+                checkResult = covariant
+                                  ? currentParameterType.IsAssignableFrom(
+                                      parameterType)
+                                  : currentParameterType ==
+                                    parameterType;
+            }
+            catch
+            {
+                // Ignore any errors that occur
+            }
+
+            return checkResult;
+        }
+
+        private void ShouldMatchProtectedMethods(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (_isProtected == null)
+                return;
+
+            Func<MethodInfo, bool> isProtectedMethod = method => method.IsFamily == _isProtected;
+            methods.AddCriteria(isProtectedMethod);
+        }
+
+        private void ShouldMatchPublicMethods(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (_isPublic == null)
+                return;
+            Func<MethodInfo, bool> isPublic = method => method.IsPublic == _isPublic;
+            methods.AddCriteria(isPublic);
+        }
+
+        private void ShouldMatchGenericTypeParameters(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (_typeArguments.Count > 0)
+            {
+                var position = 0;
+                foreach (Type currentType in _typeArguments)
                 {
-                    result += delegate(MethodInfo method) { return method.ReturnType.IsAssignableFrom(_returnType); };
+                    var parameterType = currentType;
+                    var currentPosition = position++;
+                    Func<MethodInfo, bool> matchesTypeParameter = method => MatchesGenericParameterType(currentPosition, method, parameterType,
+                        (leftType, rightType) => leftType == rightType);
+
+                    methods.AddCriteria(matchesTypeParameter);
                 }
             }
 
-            #endregion
+            if (_typeArguments.Count != 0)
+                return;
 
-            #region Match the parameters
+            Func<MethodInfo, bool> hasNoTypeArguments = delegate(MethodInfo currentMethod)
+                                                            {
+                                                                var currentParameterTypes = currentMethod.GetGenericArguments();
 
+                                                                // Match the Type parameter
+                                                                var parameterCount = currentParameterTypes.Length;
+                                                                return parameterCount == 0;
+                                                            };
+
+            methods.AddCriteria(hasNoTypeArguments);
+        }
+
+        private bool MatchesGenericParameterType(int currentPosition, MethodInfo method, Type parameterType, Func<Type, Type, bool> areParameterTypesEqual)
+        {
+            if (!method.IsGenericMethod)
+                return false;
+
+            var typeArgs = method.GetGenericArguments();
+            var isMatch = false;
+
+            try
+            {
+                Type currentPropertyType = typeArgs[currentPosition];
+                isMatch = areParameterTypesEqual(currentPropertyType, parameterType);
+            }
+            catch
+            {
+                // Ignore the error 
+            }
+
+            return isMatch;
+        }
+
+        private void ShouldMatchParameters(IList<IFuzzyItem<MethodInfo>> methods)
+        {
             if (_matchParameters && _parameterTypes.Count > 0)
             {
-                Predicate<MethodInfo> hasParameterTypes = null;
                 ParameterInfo[] currentParameters = _parameterTypes.ToArray();
 
                 // Match the parameter count
-                int parameterCount = currentParameters != null ? currentParameters.Length : 0;
+                int parameterCount = currentParameters.Length;
 
-                result += delegate(MethodInfo method)
-                              {
-                                  ParameterInfo[] parameters = method.GetParameters();
-                                  int count = parameters == null ? 0 : parameters.Length;
+                Func<MethodInfo, bool> hasParameterCount = method =>
+                                                                {
+                                                                    var parameters = method.GetParameters();
+                                                                    var count = parameters.Length;
 
-                                  return parameterCount == count;
-                              };
+                                                                    return parameterCount == count;
+                                                                };
+
+                var covariant = _matchCovariantParameterTypes;
 
                 // Match the parameter types
-                foreach (ParameterInfo param in currentParameters)
-                {
-                    int position = param.Position;
-                    Type parameterType = param.ParameterType;
-                    Predicate<MethodInfo> hasParameter = MakeParameterPredicate(position, parameterType,
-                                                                                _matchCovariantParameterTypes);
-
-                    hasParameterTypes += hasParameter;
-                }
-
-                if (hasParameterTypes != null)
-                    result += hasParameterTypes;
+                ShouldMatchParameterTypes(currentParameters, covariant, methods);
+                methods.AddCriteria(hasParameterCount);
             }
 
 
             // Check for zero parameters
             if (_matchParameters && _parameterTypes.Count == 0 && !_matchRuntimeArguments)
             {
-                result += delegate(MethodInfo currentMethod)
+                Func<MethodInfo, bool> hasZeroParameters = delegate(MethodInfo currentMethod)
                               {
-                                  ParameterInfo[] currentParameters = currentMethod.GetParameters();
+                                  var currentParameters = currentMethod.GetParameters();
 
                                   // Match the parameter count
-                                  int parameterCount = currentParameters != null ? currentParameters.Length : 0;
+                                  var parameterCount = currentParameters.Length;
                                   return parameterCount == 0;
                               };
+
+                methods.AddCriteria(hasZeroParameters);
             }
-
-            #endregion
-
-            #region Match the generic type parameters
-
-            if (_typeArguments.Count > 0)
-            {
-                Predicate<MethodInfo> matchesTypeParameters = null;
-                int position = 0;
-                foreach (Type currentType in _typeArguments)
-                {
-                    matchesTypeParameters += delegate(MethodInfo method)
-                                                 {
-                                                     if (!method.IsGenericMethod)
-                                                         return false;
-
-                                                     Type[] typeArgs = method.GetGenericArguments();
-                                                     bool isMatch = false;
-
-                                                     try
-                                                     {
-                                                         isMatch = typeArgs[position++] == currentType;
-                                                     }
-                                                     catch
-                                                     {
-                                                         // Ignore the error 
-                                                     }
-                                                     return isMatch;
-                                                 };
-                }
-
-                result += matchesTypeParameters;
-            }
-
-            if (_typeArguments.Count == 0)
-            {
-                result += delegate(MethodInfo currentMethod)
-                              {
-                                  Type[] currentParameterTypes = currentMethod.GetGenericArguments();
-
-                                  // Match the Type parameter
-                                  int parameterCount = currentParameterTypes != null ? currentParameterTypes.Length : 0;
-                                  return parameterCount == 0;
-                              };
-            }
-
-            #endregion
-
-            #region Match public methods
-
-            if (_isPublic != null && _isPublic.HasValue)
-            {
-                result += delegate(MethodInfo method) { return method.IsPublic == _isPublic; };
-            }
-
-            #endregion
-
-            #region Match protected methods
-
-            if (_isProtected != null && _isProtected.HasValue)
-            {
-                result += delegate(MethodInfo method) { return method.IsFamily == _isProtected; };
-            }
-
-            #endregion
-
-            #region Match the runtime arguments
-
-            if (_arguments.Count > 0 && MatchRuntimeArguments)
-            {
-                int position = 0;
-                foreach (object argument in _arguments)
-                {
-                    if (argument != null)
-                    {
-                        Type argumentType = argument.GetType();
-                        result += MakeParameterPredicate(position, argumentType, _matchCovariantParameterTypes);
-                    }
-                    position++;
-                }
-            }
-
-            if (_arguments.Count == 0 && MatchRuntimeArguments)
-            {
-                result += delegate(MethodInfo currentMethod)
-                              {
-                                  ParameterInfo[] currentParameters = currentMethod.GetParameters();
-
-                                  // Match the parameter count
-                                  int parameterCount = currentParameters != null ? currentParameters.Length : 0;
-                                  return parameterCount == 0;
-                              };
-            }
-
-            #endregion
-
-            #region Match the parameter types
-
-            if (MatchParameterTypes && _argumentTypes.Count > 0)
-            {
-                int position = 0;
-                foreach (Type currentType in _argumentTypes)
-                {
-                    result += MakeParameterPredicate(position, currentType, false);
-                    position++;
-                }
-            }
-
-            #endregion
-
-            return result;
         }
 
-        private static Predicate<MethodInfo>
-            MakeParameterPredicate(int position, Type parameterType, bool covariant)
+        private void ShouldMatchParameterTypes(IEnumerable<ParameterInfo> currentParameters, bool covariant, IList<IFuzzyItem<MethodInfo>> methods)
         {
-            Predicate<MethodInfo> result = delegate(MethodInfo method)
-                                               {
-                                                   ParameterInfo[] parameters = method.GetParameters();
-
-                                                   bool checkResult = false;
-                                                   try
-                                                   {
-                                                       if (!covariant)
-                                                           checkResult = parameters[position].ParameterType ==
-                                                                         parameterType;
-
-                                                       if (covariant)
-                                                           checkResult =
-                                                               parameters[position].ParameterType.IsAssignableFrom(
-                                                                   parameterType);
-                                                   }
-                                                   catch
-                                                   {
-                                                       // Ignore any errors that occur
-                                                   }
-                                                   return checkResult;
-                                               };
-
-            return result;
+            foreach (ParameterInfo param in currentParameters)
+            {
+                int position = param.Position;
+                Type parameterType = param.ParameterType;
+                Func<MethodInfo, bool> hasParameter = MakeParameterPredicate(position, parameterType,
+                                                                            covariant);
+                methods.AddCriteria(hasParameter);
+            }
         }
+
+        private void ShouldMatchReturnType(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (_returnType == null)
+                return;
+
+            Func<MethodInfo, bool> hasSpecificReturnType = method => method.ReturnType == _returnType;
+            methods.AddCriteria(hasSpecificReturnType);
+
+            if (!_matchCovariantReturnType)
+                return;
+
+            Func<MethodInfo, bool> hasCovariantReturnType = method => method.ReturnType.IsAssignableFrom(_returnType);
+            methods.AddCriteria(hasCovariantReturnType);
+        }
+
+        private void ShouldMatchMethodName(IList<IFuzzyItem<MethodInfo>> methods)
+        {
+            if (string.IsNullOrEmpty(_methodName))
+                return;
+
+            Func<MethodInfo, bool> shouldMatchMethodName =
+                method => method.Name == _methodName;
+
+            // Results that match the method name will get a higher
+            // score
+            methods.AddCriteria(shouldMatchMethodName, CriteriaType.Standard, 2);
+        }
+
 
         public void SetParameterTypes(ParameterInfo[] parameterInfo)
         {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using LinFu.Common;
 
+using LinFu.Finders;
 namespace LinFu.Reflection
 {
     public class MethodFinder : IMethodFinder
@@ -11,8 +11,6 @@ namespace LinFu.Reflection
 
         private readonly Dictionary<Type, IEnumerable<MethodInfo>> _methodCache =
             new Dictionary<Type, IEnumerable<MethodInfo>>();
-
-        #region IMethodFinder Members
 
         public MethodInfo Find(string methodName, Type targetType, object[] args)
         {
@@ -26,28 +24,34 @@ namespace LinFu.Reflection
             var arguments = new List<object>();
             if (args != null && args.Length > 0)
                 arguments.AddRange(args);
+
             builder.RuntimeArguments.AddRange(arguments);
             builder.MatchRuntimeArguments = true;
 
-            Predicate<MethodInfo> finderPredicate = builder.CreatePredicate();
-            var finder = new FuzzyFinder<MethodInfo>();
-            finder.Tolerance = .66;
+            var cachedSearchList = _cachedResults.AsFuzzyList();
+            builder.AddPredicates(cachedSearchList);
 
             // Search for any previous matches
-            MethodInfo bestMatch = finder.Find(finderPredicate, _cachedResults);
+            var tolerance = .66;
+            var bestMatch = cachedSearchList.BestMatch(tolerance);
 
+            MethodInfo result = null;
             if (bestMatch == null)
             {
                 // If there isn't a match, search the current type
                 // for an existing match
                 IEnumerable<MethodInfo> methods = GetMethods(targetType);
-                bestMatch = finder.Find(finderPredicate, methods);
+                var methodSearchPool = methods.AsFuzzyList();
+                builder.AddPredicates(methodSearchPool);
+
+                bestMatch = methodSearchPool.BestMatch();
             }
 
-            return bestMatch;
-        }
+            if (bestMatch != null)
+                result = bestMatch.Item;
 
-        #endregion
+            return result;
+        }
 
         private IEnumerable<MethodInfo> GetMethods(Type targetType)
         {
