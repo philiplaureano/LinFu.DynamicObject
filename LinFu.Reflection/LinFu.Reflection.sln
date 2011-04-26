@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinFu.Reflection.Tests", "L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinFu.Delegates", "..\LinFu.Delegates\LinFu.Delegates\LinFu.Delegates.csproj", "{65A26586-FE64-411D-999D-EC328DFF8986}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinFu.Reflection.Extensions", "..\LinFu.Reflection.Extensions\LinFu.Reflection.Extensions.csproj", "{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{65A26586-FE64-411D-999D-EC328DFF8986}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65A26586-FE64-411D-999D-EC328DFF8986}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65A26586-FE64-411D-999D-EC328DFF8986}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

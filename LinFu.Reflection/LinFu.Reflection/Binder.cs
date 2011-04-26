@@ -44,7 +44,7 @@ namespace LinFu.Reflection
                 if (handled)
                     return returnValue;
 
-                throw new NotImplementedException();
+                throw new MethodNotFoundException(string.Format("Method '{0}' not found", methodName));
             }
 
             try

@@ -26,8 +26,6 @@ namespace LinFu.Reflection
             _factory = new ProxyFactory();
         }
 
-        #region User-Defined Operators
-
         public static DynamicObject operator -(DynamicObject lhs, IMethodMissingCallback callback)
         {
             if (lhs._handlers.Contains(callback))
@@ -42,8 +40,6 @@ namespace LinFu.Reflection
 
             return lhs;
         }
-
-        #endregion
 
         public IObjectMethods Methods
         {
@@ -123,7 +119,7 @@ namespace LinFu.Reflection
         internal object ExecuteMethodMissing(string methodName, object[] args, ref bool handled)
         {
             if (_handlers.Count == 0)
-                throw new NotImplementedException(
+                throw new MethodNotFoundException(
                     string.Format("Method '{0}' not found on type '{1}",
                                   methodName, Target.GetType().FullName));
 
@@ -143,7 +139,7 @@ namespace LinFu.Reflection
 
 
             if (missingParameters.Handled == false)
-                throw new NotImplementedException(
+                throw new MethodNotFoundException(
                     string.Format("Method '{0}' not found on type '{1}",
                                   methodName, Target.GetType().FullName));
 
@@ -173,7 +169,7 @@ namespace LinFu.Reflection
 
             if (otherInstance is DynamicObject)
             {
-                var other = (DynamicObject) otherInstance;
+                var other = (DynamicObject)otherInstance;
                 _handlers.Add(other);
                 return;
             }
@@ -189,9 +185,9 @@ namespace LinFu.Reflection
                     continue;
 
                 // Ignore anything declared on System.Object
-                if (method.DeclaringType == typeof (object))
+                if (method.DeclaringType == typeof(object))
                     continue;
-                if (method.DeclaringType == typeof (IMixinAware))
+                if (method.DeclaringType == typeof(IMixinAware))
                     continue;
 
                 Type delegateType =
@@ -201,7 +197,7 @@ namespace LinFu.Reflection
                 // Bind it to the new delegate
                 IntPtr methodPointer = method.MethodHandle.GetFunctionPointer();
                 var delegateInstance =
-                    Activator.CreateInstance(delegateType, new[] {otherInstance, methodPointer}) as MulticastDelegate;
+                    Activator.CreateInstance(delegateType, new[] { otherInstance, methodPointer }) as MulticastDelegate;
 
                 // Mix the new delegate in with everything else
                 AddMethod(method.Name, delegateInstance);
@@ -218,7 +214,7 @@ namespace LinFu.Reflection
         public bool LooksLike<T>()
             where T : class
         {
-            return LooksLike(typeof (T));
+            return LooksLike(typeof(T));
         }
 
         public bool LooksLike(Type comparisonType)
@@ -234,19 +230,20 @@ namespace LinFu.Reflection
             // Add the methods native to the type
             methodPool.AddRange(targetType.GetMethods(BindingFlags.Public | BindingFlags.Instance));
             var searchPool = methodPool.AsFuzzyList();
-            //var finder = new FuzzyFinder<MethodInfo>();
-            //finder.Tolerance = .66;
-
+            
             MethodInfo[] comparisonTypeMethods = comparisonType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
             bool result = true;
             foreach (MethodInfo method in comparisonTypeMethods)
             {
                 // Search for a similar method
-                searchPool.Reset();                
+                searchPool.Reset();
                 PredicateBuilder.AddPredicates(searchPool, method);
-                
+
                 var bestMatch = searchPool.BestMatch(.66);
+                if (bestMatch == null)
+                    continue;
+
                 var compatibleMethod = bestMatch.Item;
                 if (compatibleMethod != null)
                     continue;

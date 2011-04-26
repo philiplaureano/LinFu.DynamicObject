@@ -215,9 +215,6 @@ namespace LinFu.Reflection
             var hasMatchingParameterType = MakeParameterPredicate(position, argumentType, false);
             var hasCovariantParameterType = MakeParameterPredicate(position, argumentType, true);
 
-
-            //methods.AddCriteria(hasMatchingParameterType, criteriaType);
-            //methods.AddCriteria(hasCovariantParameterType, CriteriaType.Critical);
             if (!matchCovariantParameterTypes)
             {
                 Func<MethodInfo, bool> hasExactParameterType =
@@ -409,7 +406,7 @@ namespace LinFu.Reflection
 
             // Results that match the method name will get a higher
             // score
-            methods.AddCriteria(shouldMatchMethodName, CriteriaType.Standard, 2);
+            methods.AddCriteria(shouldMatchMethodName, CriteriaType.Critical);
         }
 
 

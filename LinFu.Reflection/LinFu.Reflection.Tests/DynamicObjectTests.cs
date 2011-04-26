@@ -4,11 +4,12 @@ using System.Text;
 using LinFu.Delegates;
 using NMock2;
 using NUnit.Framework;
+using Is = NMock2.Is;
 
 namespace LinFu.Reflection.Tests
 {
     [TestFixture]
-    public class DynamicObjectTests : BaseFixture 
+    public class DynamicObjectTests : BaseFixture
     {
         [Test]
         public void ShouldBeAbleToUseCLRDynamicObjectsAsExpandoObjects()
@@ -29,10 +30,10 @@ namespace LinFu.Reflection.Tests
         {
             string methodName = "TargetMethod";
             MockClass mockTarget = new MockClass();
-            
+
             DynamicObject dynamic = new DynamicObject(mockTarget);
             dynamic.Methods[methodName]();
-            Assert.AreEqual(1, mockTarget.CallCount, "The target method was not called!");            
+            Assert.AreEqual(1, mockTarget.CallCount, "The target method was not called!");
         }
 
         [Test]
@@ -47,7 +48,7 @@ namespace LinFu.Reflection.Tests
             dynamic.Properties[propertyName] = 0;
             object value = dynamic.Properties[propertyName];
 
-            Assert.AreEqual(2, mockTarget.CallCount, "The target property was not called!");            
+            Assert.AreEqual(2, mockTarget.CallCount, "The target property was not called!");
         }
 
         [Test]
@@ -57,7 +58,7 @@ namespace LinFu.Reflection.Tests
             DynamicObject dynamic = new DynamicObject(new object());
             dynamic.AddMethod("Add", addBody);
 
-            int result = (int) dynamic.Methods["Add"](1, 1);
+            int result = (int)dynamic.Methods["Add"](1, 1);
             Assert.AreEqual(2, result);
         }
 
@@ -75,7 +76,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldAssignSelfToMixinAwareInstance()
         {
-            IMixinAware test = mock.NewMock<IMixinAware>();            
+            IMixinAware test = mock.NewMock<IMixinAware>();
             DynamicObject dynamic = new DynamicObject(new object());
             Expect.Once.On(test).SetProperty("Self").To(dynamic);
 
@@ -117,7 +118,7 @@ namespace LinFu.Reflection.Tests
         public void ShouldBeAbleToTellWhetherOrNotSomethingLooksLikeADuck()
         {
             DynamicObject dynamic = new DynamicObject(new RubberDucky());
-            Assert.IsTrue(dynamic.LooksLike(typeof (IDuck)));
+            Assert.IsTrue(dynamic.LooksLike(typeof(IDuck)));
             Assert.IsTrue(dynamic.LooksLike<IDuck>());
         }
 
@@ -127,17 +128,44 @@ namespace LinFu.Reflection.Tests
             CustomDelegate addBody = delegate(object[] args)
                                          {
                                              int a = (int)args[0];
-                                             int b = (int) args[1];
+                                             int b = (int)args[1];
                                              return a + b;
                                          };
 
             DynamicObject dynamic = new DynamicObject(new object());
-            Type returnType = typeof (int);
-            Type[] parameterTypes = new Type[] {typeof (int), typeof (int)};
+            Type returnType = typeof(int);
+            Type[] parameterTypes = new Type[] { typeof(int), typeof(int) };
             dynamic.AddMethod("Add", addBody, returnType, parameterTypes);
 
             int result = (int)dynamic.Methods["Add"](1, 1);
             Assert.AreEqual(2, result);
+        }
+
+        [Test]
+        public void CanCreateADynamicAdder()
+        {
+            var adder = new DynamicObject();
+            CustomDelegate addBody = delegate(object[] args)
+            {
+                int a = (int)args[0];
+                int b = (int)args[1];
+                return a + b;
+            };
+
+            // Map LinFu's DynamicObject to an ICanAdd interface
+            var linfuDynamicObject = new DynamicObject(new object());
+            var returnType = typeof(int);
+            var parameterTypes = new Type[] { typeof(int), typeof(int) };
+            linfuDynamicObject.AddMethod("Add", addBody, returnType, parameterTypes);
+
+            // If it looks like a duck...
+            Assert.IsTrue(linfuDynamicObject.LooksLike<ICanAdd>());
+
+            // ...then it must be a duck, right?
+            var somethingThatCanAdd = new SomethingThatAdds(adder.CreateDuck<ICanAdd>());
+            somethingThatCanAdd.FirstNumber = 10;
+            somethingThatCanAdd.SecondNumber = 20;
+            Assert.AreEqual(somethingThatCanAdd.AddNumbers(), 30);
         }
     }
 }

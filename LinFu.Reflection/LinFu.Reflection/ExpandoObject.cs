@@ -34,16 +34,38 @@ namespace LinFu.Reflection
             _target.AddMethod(methodName, methodBody);
         }
 
+        public override bool TryConvert(ConvertBinder binder, out object result)
+        {
+            if (!_target.LooksLike(binder.ReturnType))
+                return base.TryConvert(binder, out result);
+
+            result = _target.CreateDuck(binder.ReturnType);
+            return result != null;
+        }
+
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             var propertyName = binder.Name;
             var methodName = string.Format("set_{0}", propertyName);
-            _target.Methods[methodName](value);
+            try
+            {
+                _target.Methods[methodName](value);
+            }
+            catch (MethodNotFoundException ex)
+            {
+                var isDelegate = value is MulticastDelegate && value != null;
+                if (!isDelegate)
+                    throw;
+
+                var body = (MulticastDelegate)value;
+                _target.AddMethod(propertyName, body);
+            }
+
             return true;
         }
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
-        {            
+        {
             var methodName = binder.Name;
 
             result = _target.Methods[methodName](args);

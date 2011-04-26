@@ -86,6 +86,7 @@
     <Compile Include="MethodFinder.cs" />
     <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="MethodMissingParameters.cs" />
+    <Compile Include="MethodNotFoundException.cs" />
     <Compile Include="PredicateBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
