@@ -36,14 +36,16 @@ namespace LinFu.Reflection.Extensions
 
             return dynamic.CreateDuck(targetType);
         }
+
         public static void AddProperty(this TypeSpec spec, string propertyName,
             Type propertyType)
         {
             PropertySpec property = new PropertySpec();
             property.PropertyName = propertyName;
-
-            PropertyBag bag = new PropertyBag();
+            
+            var bag = new PropertyBag();
             property.PropertyType = propertyType;
+            property.Behavior = bag;
             spec.Properties.Add(property);
         }
     }

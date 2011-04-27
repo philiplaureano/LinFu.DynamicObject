@@ -82,11 +82,14 @@
   <ItemGroup>
     <Compile Include="BaseFixture.cs" />
     <Compile Include="DynamicObjectTests.cs" />
+    <Compile Include="DynamicTypeTests.cs" />
     <Compile Include="ExpandoObjectTests.cs" />
     <Compile Include="FirstClass.cs" />
     <Compile Include="ICanAdd.cs" />
     <Compile Include="IDuck.cs" />
+    <Compile Include="INameable.cs" />
     <Compile Include="IntegerOperation.cs" />
+    <Compile Include="IPerson.cs" />
     <Compile Include="ITest.cs" />
     <Compile Include="MethodFinderTargetDummy.cs" />
     <Compile Include="MockClass.cs" />
@@ -100,6 +103,10 @@
     <ProjectReference Include="..\..\LinFu.Delegates\LinFu.Delegates\LinFu.Delegates.csproj">
       <Project>{65A26586-FE64-411D-999D-EC328DFF8986}</Project>
       <Name>LinFu.Delegates</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LinFu.Reflection.Extensions\LinFu.Reflection.Extensions.csproj">
+      <Project>{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}</Project>
+      <Name>LinFu.Reflection.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\LinFu.Reflection\LinFu.Reflection.csproj">
       <Project>{CD5E9841-5A3C-47E4-BADC-9CA297AA7948}</Project>
