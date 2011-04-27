@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text;
 using LinFu.Delegates;
 using NMock2;
@@ -7,7 +8,7 @@ using NUnit.Framework;
 using Is = NMock2.Is;
 
 namespace LinFu.Reflection.Tests
-{
+{    
     [TestFixture]
     public class DynamicObjectTests : BaseFixture
     {
@@ -166,6 +167,6 @@ namespace LinFu.Reflection.Tests
             somethingThatCanAdd.FirstNumber = 10;
             somethingThatCanAdd.SecondNumber = 20;
             Assert.AreEqual(somethingThatCanAdd.AddNumbers(), 30);
-        }
+        }       
     }
 }
