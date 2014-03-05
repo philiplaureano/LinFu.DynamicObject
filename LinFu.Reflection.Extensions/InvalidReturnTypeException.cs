@@ -20,7 +20,7 @@ namespace LinFu.Reflection.Extensions
         {
             get
             {
-                string message = string.Format("The return type for method '{0}' should be compatible with type '{1}'. Its actual return type is '{2}'",
+                var message = string.Format("The return type for method '{0}' should be compatible with type '{1}'. Its actual return type is '{2}'",
                     _methodName,
                     _expectedReturnType.FullName,
                     _actualType.FullName);

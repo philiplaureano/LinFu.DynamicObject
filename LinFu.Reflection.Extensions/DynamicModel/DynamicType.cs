@@ -5,12 +5,12 @@ using System.Text;
 
 namespace LinFu.Reflection.Extensions
 {
-    public partial class DynamicType : BaseCompositeMethodMissingCallback
+    public class DynamicType : BaseCompositeMethodMissingCallback
     {
         private readonly DynamicObject _typeRepresentation = new DynamicObject();
         public static DynamicType operator +(DynamicType lhs, DynamicType rhs)
         {
-            return new CompositeDynamicType(new DynamicType[] { lhs, rhs });
+            return new CompositeDynamicType(new[] { lhs, rhs });
         }
         public DynamicType()
         {
@@ -42,11 +42,11 @@ namespace LinFu.Reflection.Extensions
             if (TypeSpec == null)
                 return new IMethodMissingCallback[0];
 
-            List<IMethodMissingCallback> results = new List<IMethodMissingCallback>();
+            var results = new List<IMethodMissingCallback>();
 
             foreach (var property in TypeSpec.Properties)
             {
-                var newProperty = new DynamicProperty() { PropertySpec = property };
+                var newProperty = new DynamicProperty { PropertySpec = property };
                 results.Add(newProperty);
             }
 

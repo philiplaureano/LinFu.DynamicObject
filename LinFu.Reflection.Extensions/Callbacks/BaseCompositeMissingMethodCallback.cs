@@ -8,10 +8,6 @@ namespace LinFu.Reflection.Extensions
 {
     public abstract class BaseCompositeMethodMissingCallback : IMethodMissingCallback
     {
-        protected BaseCompositeMethodMissingCallback()
-        {
-        }
-
         #region IMethodMissingCallback Members
 
         public virtual bool CanHandle(MethodInfo method)
@@ -35,7 +31,7 @@ namespace LinFu.Reflection.Extensions
 
             foreach (var callback in callbacks)
             {
-                if (missingParameters.Handled == true)
+                if (missingParameters.Handled)
                     return;
 
                 callback.MethodMissing(source, missingParameters);

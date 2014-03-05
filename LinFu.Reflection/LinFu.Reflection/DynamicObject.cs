@@ -64,7 +64,7 @@ namespace LinFu.Reflection
 
         public void MethodMissing(object source, MethodMissingParameters missingParameters)
         {
-            bool handled = false;
+            var handled = false;
             object result = null;
             try
             {
@@ -126,7 +126,7 @@ namespace LinFu.Reflection
             handlers.Reverse();
 
             // Fire the event until a handler is found 
-            foreach (IMethodMissingCallback callback in handlers)
+            foreach (var callback in handlers)
             {
                 callback.MethodMissing(this, missingParameters);
                 if (missingParameters.Handled)
@@ -151,7 +151,7 @@ namespace LinFu.Reflection
 
         public void AddMethod(string methodName, CustomDelegate body, Type returnType, params Type[] parameters)
         {
-            MulticastDelegate stronglyTypedDelegate = DelegateFactory.DefineDelegate(body, returnType, parameters);
+            var stronglyTypedDelegate = DelegateFactory.DefineDelegate(body, returnType, parameters);
             if (stronglyTypedDelegate == null)
                 return;
 
@@ -170,12 +170,12 @@ namespace LinFu.Reflection
                 return;
             }
 
-            Type targetType = otherInstance.GetType();
+            var targetType = otherInstance.GetType();
 
-            MethodInfo[] methods =
+            var methods =
                 targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            foreach (MethodInfo method in methods)
+            foreach (var method in methods)
             {
                 if (method.IsGenericMethodDefinition)
                     continue;
@@ -186,12 +186,12 @@ namespace LinFu.Reflection
                 if (method.DeclaringType == typeof(IMixinAware))
                     continue;
 
-                Type delegateType =
+                var delegateType =
                     DelegateFactory.DefineDelegateType("__AnonymousDelegate",
                                                        method.ReturnType, method.GetParameters());
 
                 // Bind it to the new delegate
-                IntPtr methodPointer = method.MethodHandle.GetFunctionPointer();
+                var methodPointer = method.MethodHandle.GetFunctionPointer();
                 var delegateInstance =
                     Activator.CreateInstance(delegateType, new[] { otherInstance, methodPointer }) as MulticastDelegate;
 
@@ -218,7 +218,7 @@ namespace LinFu.Reflection
             if (_target == null)
                 return false;
 
-            Type targetType = _target.GetType();
+            var targetType = _target.GetType();
 
             // Build the list of methods to compare against
             var methodPool = new List<MethodInfo>();
@@ -227,10 +227,10 @@ namespace LinFu.Reflection
             methodPool.AddRange(targetType.GetMethods(BindingFlags.Public | BindingFlags.Instance));
             var searchPool = methodPool.AsFuzzyList();
             
-            MethodInfo[] comparisonTypeMethods = comparisonType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            var comparisonTypeMethods = comparisonType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
-            bool result = true;
-            foreach (MethodInfo method in comparisonTypeMethods)
+            var result = true;
+            foreach (var method in comparisonTypeMethods)
             {
                 // Search for a similar method
                 searchPool.Reset();
@@ -244,10 +244,10 @@ namespace LinFu.Reflection
                 if (compatibleMethod != null)
                     continue;
 
-                bool canHandleMethod = false;
+                var canHandleMethod = false;
 
                 // If the search fails, we need to query for a replacement
-                foreach (IMethodMissingCallback callback in _handlers)
+                foreach (var callback in _handlers)
                 {
                     if (!callback.CanHandle(method))
                         continue;
@@ -277,7 +277,7 @@ namespace LinFu.Reflection
         public object CreateDuck(Type duckType, params Type[] baseInterfaces)
         {
             IInterceptor interceptor = new DuckType(this);
-            object result = _factory.CreateProxy(duckType, interceptor, baseInterfaces);
+            var result = _factory.CreateProxy(duckType, interceptor, baseInterfaces);
             return result;
         }
     }

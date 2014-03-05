@@ -40,7 +40,7 @@ namespace LinFu.Reflection
             {
                 // If there isn't a match, search the current type
                 // for an existing match
-                IEnumerable<MethodInfo> methods = GetMethods(targetType);
+                var methods = GetMethods(targetType);
                 var methodSearchPool = methods.AsFuzzyList();
                 builder.AddPredicates(methodSearchPool);
 

@@ -20,9 +20,7 @@ namespace LinFu.Reflection.Extensions
         {
             return new CompositeTypeSpec(lhs, rhs);
         }
-        public TypeSpec()
-        {
-        }
+
         public virtual string Name
         {
             get;

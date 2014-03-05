@@ -24,7 +24,7 @@ namespace LinFu.Reflection.Extensions
             if (MethodSpec == null || MethodSpec.MethodBody == null)
                 return false;
 
-            PredicateBuilder builder = new PredicateBuilder();
+            var builder = new PredicateBuilder();
             builder.MatchCovariantParameterTypes = false;
             builder.MatchCovariantReturnType = false;
             builder.MatchParameterTypes = true;
@@ -41,7 +41,7 @@ namespace LinFu.Reflection.Extensions
                 methodNames.AddRange(MethodSpec.Aliases);
 
             var found = false;
-            var itemList = new MethodInfo[] { method };
+            var itemList = new[] { method };
 
             foreach (var name in methodNames)
             {                
@@ -65,30 +65,30 @@ namespace LinFu.Reflection.Extensions
             if (MethodSpec == null)
                 return;
 
-            string currentMethodName = missingParameters.MethodName;
+            var currentMethodName = missingParameters.MethodName;
             // Make sure that the method name matches either the
             // actual method name or a name from the list of method aliases
-            List<string> names = new List<string>();
+            var names = new List<string>();
             names.Add(MethodSpec.MethodName);
             names.AddRange(MethodSpec.Aliases);
 
-            bool isMatch = names.Contains(currentMethodName);
+            var isMatch = names.Contains(currentMethodName);
             if (!isMatch)
                 return;
 
             // Match the parameter count
-            int parameterCount = missingParameters.Arguments == null ? 0 : missingParameters.Arguments.Length;
+            var parameterCount = missingParameters.Arguments == null ? 0 : missingParameters.Arguments.Length;
 
             if (parameterCount != MethodSpec.ParameterTypes.Count)
                 return;
 
             // Match the parameter types
-            bool isCompatible = true;
-            int index = 0;
-            foreach (Type parameterType in MethodSpec.ParameterTypes)
+            var isCompatible = true;
+            var index = 0;
+            foreach (var parameterType in MethodSpec.ParameterTypes)
             {
                 Type argumentType = null;
-                object currentArgument = missingParameters.Arguments[index++];
+                var currentArgument = missingParameters.Arguments[index++];
 
                 if (currentArgument != null)
                     argumentType = currentArgument.GetType();
@@ -129,7 +129,7 @@ namespace LinFu.Reflection.Extensions
                 return;
 
             // Verify that the return value is compatible with the return type
-            Type actualReturnType = missingParameters.ReturnValue.GetType();
+            var actualReturnType = missingParameters.ReturnValue.GetType();
 
             if (!MethodSpec.ReturnType.IsAssignableFrom(actualReturnType))
                 throw new InvalidReturnTypeException(MethodSpec.MethodName, MethodSpec.ReturnType, actualReturnType);

@@ -24,8 +24,8 @@ namespace LinFu.Reflection.Extensions
             if (PropertySpec == null)
                 return false;
 
-            string methodName = method.Name;
-            string getterName = string.Format("get_{0}", PropertySpec.PropertyName);
+            var methodName = method.Name;
+            var getterName = string.Format("get_{0}", PropertySpec.PropertyName);
 
             var aliasMatches = (from alias in PropertySpec.Aliases
                                 let currentMethodName = string.Format("get_{0}", alias)
@@ -47,7 +47,7 @@ namespace LinFu.Reflection.Extensions
             if (PropertySpec == null)
                 return;
 
-            string methodName = missingParameters.MethodName;
+            var methodName = missingParameters.MethodName;
 
             // Search for the getter
             var aliasMatches = (from alias in PropertySpec.Aliases
@@ -55,7 +55,7 @@ namespace LinFu.Reflection.Extensions
                                 where currentMethodName == methodName
                                 select alias).Count();
 
-            string getterName = string.Format("get_{0}", PropertySpec.PropertyName);
+            var getterName = string.Format("get_{0}", PropertySpec.PropertyName);
             if (methodName != getterName && aliasMatches == 0)
                 return;
 

@@ -10,28 +10,28 @@ namespace LinFu.Reflection.Extensions
         public static bool LooksLike<T>(this TypeSpec spec)
             where T : class
         {
-            DynamicType dynamic = new DynamicType(spec);
+            var dynamic = new DynamicType(spec);
             return dynamic.LooksLike<T>();
         }
         public static bool LooksLike(this TypeSpec spec, Type targetType)
         {
-            DynamicType dynamicType = new DynamicType(spec);
+            var dynamicType = new DynamicType(spec);
 
             return dynamicType.LooksLike(targetType);
         }
         public static T CreateDuck<T>(this TypeSpec spec)
             where T : class
         {
-            DynamicType type = new DynamicType(spec);
-            DynamicObject dynamic = new DynamicObject();
+            var type = new DynamicType(spec);
+            var dynamic = new DynamicObject();
             dynamic += type;
 
             return dynamic.CreateDuck<T>();
         }
         public static object CreateDuck(this TypeSpec spec, Type targetType)
         {
-            DynamicType type = new DynamicType(spec);
-            DynamicObject dynamic = new DynamicObject();
+            var type = new DynamicType(spec);
+            var dynamic = new DynamicObject();
             dynamic += type;
 
             return dynamic.CreateDuck(targetType);
@@ -40,7 +40,7 @@ namespace LinFu.Reflection.Extensions
         public static void AddProperty(this TypeSpec spec, string propertyName,
             Type propertyType)
         {
-            PropertySpec property = new PropertySpec();
+            var property = new PropertySpec();
             property.PropertyName = propertyName;
             
             var bag = new PropertyBag();

@@ -29,8 +29,8 @@ namespace LinFu.Reflection.Extensions
             if (PropertySpec == null)
                 return false;
 
-            string methodName = method.Name;
-            string setterName = string.Format("set_{0}", PropertySpec.PropertyName);
+            var methodName = method.Name;
+            var setterName = string.Format("set_{0}", PropertySpec.PropertyName);
 
             var aliasMatches = (from alias in PropertySpec.Aliases
                                 let currentMethodName = string.Format("set_{0}", alias)
@@ -63,7 +63,7 @@ namespace LinFu.Reflection.Extensions
             if (arguments.Length != 1)
                 return;
 
-            string setterName = string.Format("set_{0}", PropertySpec.PropertyName);
+            var setterName = string.Format("set_{0}", PropertySpec.PropertyName);
 
             var aliasMatches = (from alias in PropertySpec.Aliases
                                 let currentMethodName = string.Format("set_{0}", alias)
@@ -75,7 +75,7 @@ namespace LinFu.Reflection.Extensions
                 return;
 
             // Match the runtime argument type
-            Type argumentType = arguments[0] == null ? typeof(void) : arguments[0].GetType();
+            var argumentType = arguments[0] == null ? typeof(void) : arguments[0].GetType();
 
             if (argumentType != PropertySpec.PropertyType)
                 return;

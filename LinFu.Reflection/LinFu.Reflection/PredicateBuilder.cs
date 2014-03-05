@@ -134,8 +134,8 @@ namespace LinFu.Reflection
             if (!MatchParameterTypes || _argumentTypes.Count <= 0)
                 return;
 
-            int position = 0;
-            foreach (Type currentType in _argumentTypes)
+            var position = 0;
+            foreach (var currentType in _argumentTypes)
             {
                 var predicate = MakeParameterPredicate(position, currentType, false);
                 methods.AddCriteria(predicate);
@@ -150,11 +150,11 @@ namespace LinFu.Reflection
 
             if (_arguments.Count > 0 && MatchRuntimeArguments)
             {
-                int position = 0;
+                var position = 0;
 
                 // Match the individual parameter types
                 var typeMap = new Dictionary<int, Type>();
-                foreach (object argument in _arguments)
+                foreach (var argument in _arguments)
                 {
                     if (argument != null)
                     {
@@ -281,7 +281,7 @@ namespace LinFu.Reflection
             if (_typeArguments.Count > 0)
             {
                 var position = 0;
-                foreach (Type currentType in _typeArguments)
+                foreach (var currentType in _typeArguments)
                 {
                     var parameterType = currentType;
                     var currentPosition = position++;
@@ -317,7 +317,7 @@ namespace LinFu.Reflection
 
             try
             {
-                Type currentPropertyType = typeArgs[currentPosition];
+                var currentPropertyType = typeArgs[currentPosition];
                 isMatch = areParameterTypesEqual(currentPropertyType, parameterType);
             }
             catch
@@ -332,10 +332,10 @@ namespace LinFu.Reflection
         {
             if (_matchParameters && _parameterTypes.Count > 0)
             {
-                ParameterInfo[] currentParameters = _parameterTypes.ToArray();
+                var currentParameters = _parameterTypes.ToArray();
 
                 // Match the parameter count
-                int parameterCount = currentParameters.Length;
+                var parameterCount = currentParameters.Length;
 
                 Func<MethodInfo, bool> hasParameterCount = method =>
                                                                 {
@@ -371,11 +371,11 @@ namespace LinFu.Reflection
 
         private void ShouldMatchParameterTypes(IEnumerable<ParameterInfo> currentParameters, bool covariant, IList<IFuzzyItem<MethodInfo>> methods)
         {
-            foreach (ParameterInfo param in currentParameters)
+            foreach (var param in currentParameters)
             {
-                int position = param.Position;
-                Type parameterType = param.ParameterType;
-                Func<MethodInfo, bool> hasParameter = MakeParameterPredicate(position, parameterType,
+                var position = param.Position;
+                var parameterType = param.ParameterType;
+                var hasParameter = MakeParameterPredicate(position, parameterType,
                                                                             covariant);
                 methods.AddCriteria(hasParameter);
             }

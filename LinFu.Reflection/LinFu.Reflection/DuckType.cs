@@ -13,7 +13,7 @@ namespace LinFu.Reflection
 
         public override object Intercept(InvocationInfo info)
         {
-            string methodName = info.TargetMethod.Name;
+            var methodName = info.TargetMethod.Name;
             return _target.Methods[methodName](info.Arguments);
         }
     }

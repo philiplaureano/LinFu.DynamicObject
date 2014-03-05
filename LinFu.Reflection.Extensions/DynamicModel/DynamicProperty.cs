@@ -7,10 +7,6 @@ namespace LinFu.Reflection.Extensions
 {
     public class DynamicProperty : BaseCompositeMethodMissingCallback
     {
-        public DynamicProperty()
-        {
-        }
-
         public PropertySpec PropertySpec
         {
             get;

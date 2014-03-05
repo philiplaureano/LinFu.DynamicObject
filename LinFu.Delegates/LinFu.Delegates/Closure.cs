@@ -17,7 +17,7 @@ namespace LinFu.Delegates
         public Closure(CustomDelegate body, Type returnType, 
             Type[] parameterTypes, params object[] suppliedArguments)
         {
-            MulticastDelegate targetDelegate = DelegateFactory.DefineDelegate(body, returnType, parameterTypes);
+            var targetDelegate = DelegateFactory.DefineDelegate(body, returnType, parameterTypes);
             _target = targetDelegate;
 
             if (suppliedArguments == null || suppliedArguments.Length == 0)
@@ -28,7 +28,7 @@ namespace LinFu.Delegates
         public Closure(CustomDelegate target, params object[] suppliedArguments)
             : this((MulticastDelegate)target, suppliedArguments)
         {
-            CustomDelegate customDelegate = (CustomDelegate)target;
+            var customDelegate = target;
             _invoker = new CustomDelegateInvoker(customDelegate, suppliedArguments);
         }
         public Closure(MethodInfo staticMethod, 
@@ -38,7 +38,7 @@ namespace LinFu.Delegates
                 throw new ArgumentException("The target method must be static and it cannot be an instance method",
                                             "staticMethod");
 
-            MulticastDelegate target = DelegateFactory.DefineDelegate(null, staticMethod);
+            var target = DelegateFactory.DefineDelegate(null, staticMethod);
             _target = target;
 
             if (suppliedArguments == null || suppliedArguments.Length == 0)
@@ -50,7 +50,7 @@ namespace LinFu.Delegates
         public Closure(object instance, MethodInfo targetMethod, 
             params object[] suppliedArguments)
         {
-            MulticastDelegate target = DelegateFactory.DefineDelegate(instance, targetMethod);
+            var target = DelegateFactory.DefineDelegate(instance, targetMethod);
             _target = target;
 
             if (suppliedArguments == null || suppliedArguments.Length == 0)
@@ -132,7 +132,7 @@ namespace LinFu.Delegates
                                       };
 
             
-            MulticastDelegate result = DelegateFactory.DefineDelegate(delegateType, body);
+            var result = DelegateFactory.DefineDelegate(delegateType, body);
             return result;
         }
     }

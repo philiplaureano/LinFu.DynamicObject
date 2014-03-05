@@ -10,11 +10,6 @@ namespace LinFu.Reflection.Extensions
     {
         private readonly Dictionary<int, object> _values = new Dictionary<int, object>();
         public IPropertyTypingStrategy TypingStrategy { get; set; }
-        
-        public PropertyBag()
-        {
-
-        }
 
         public object GetValue(object target, string propertyName, Type propertyType)
         {
@@ -24,7 +19,7 @@ namespace LinFu.Reflection.Extensions
 
             // Hack: Maintain a weak reference to the target
             // by using its hashcode
-            int hashCode = target.GetHashCode();
+            var hashCode = target.GetHashCode();
             if (!_values.ContainsKey(hashCode))
                 return GetDefaultValue(propertyType);
 
@@ -45,7 +40,7 @@ namespace LinFu.Reflection.Extensions
             }
             // Hack: Maintain a weak reference to the target
             // by using its hashcode
-            int hashCode = target.GetHashCode();
+            var hashCode = target.GetHashCode();
 
             _values[hashCode] = value;
         }

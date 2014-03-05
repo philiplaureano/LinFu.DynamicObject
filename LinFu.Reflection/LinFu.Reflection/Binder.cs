@@ -31,14 +31,14 @@ namespace LinFu.Reflection
             if (_target == null)
                 throw new NullReferenceException("No target instance found!");
 
-            MethodInfo bestMatch =
+            var bestMatch =
                 _finder.Find(methodName, _target.GetType(), args);
 
             object returnValue = null;
 
             if (bestMatch == null)
             {
-                bool handled = false;
+                var handled = false;
                 returnValue = _dynamicObject.ExecuteMethodMissing(methodName, args,
                                                                   ref handled);
                 if (handled)
@@ -63,13 +63,13 @@ namespace LinFu.Reflection
         {
             get
             {
-                string methodName = string.Format("get_{0}", propertyName);
+                var methodName = string.Format("get_{0}", propertyName);
                 IObjectMethods methods = this;
                 return methods[methodName]();
             }
             set
             {
-                string methodName = string.Format("set_{0}", propertyName);
+                var methodName = string.Format("set_{0}", propertyName);
                 IObjectMethods methods = this;
                 methods[methodName](value);
             }

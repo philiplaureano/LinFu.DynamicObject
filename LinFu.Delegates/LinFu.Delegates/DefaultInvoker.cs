@@ -11,21 +11,21 @@ namespace LinFu.Delegates
 
         public object Invoke(object target, MethodBase targetMethod, IEnumerable<object> curriedArguments, IEnumerable<object> invokeArguments)
         {
-            List<object> combinedArguments = GetCombinedArguments(targetMethod, curriedArguments, invokeArguments);
+            var combinedArguments = GetCombinedArguments(targetMethod, curriedArguments, invokeArguments);
             
 
-            ParameterInfo[] parameters = targetMethod.GetParameters();
-            int parameterCount = parameters == null ? 0 : parameters.Length;
+            var parameters = targetMethod.GetParameters();
+            var parameterCount = parameters == null ? 0 : parameters.Length;
 
-            object[] args = new object[parameterCount];
-            for(int i = 0; i < parameterCount; i++)
+            var args = new object[parameterCount];
+            for(var i = 0; i < parameterCount; i++)
             {
                 args[i] = combinedArguments[i];
             }
 
             // HACK: Coerce the argument list into an object array if
             // necessary
-            bool isObjectArray = parameters != null && parameters.Length == 1 &&
+            var isObjectArray = parameters != null && parameters.Length == 1 &&
                                   parameters[0].ParameterType == typeof (object[]);
 
             if (isObjectArray)                
@@ -47,12 +47,12 @@ namespace LinFu.Delegates
         private static List<object> GetCombinedArguments(MethodBase targetMethod, 
         IEnumerable<object> curriedArguments, IEnumerable<object> invokeArguments)
         {
-            ParameterInfo[] parameters = targetMethod.GetParameters();
-            int parameterCount = parameters != null ? parameters.Length : 0;
+            var parameters = targetMethod.GetParameters();
+            var parameterCount = parameters != null ? parameters.Length : 0;
 
 
-            List<object> combinedArguments = new List<object>();
-            for(int i = 0; i < parameterCount; i++)
+            var combinedArguments = new List<object>();
+            for(var i = 0; i < parameterCount; i++)
             {
                 combinedArguments.Add(Args.Lambda);
             }
@@ -66,8 +66,8 @@ namespace LinFu.Delegates
         #endregion
         private static void AssignArguments(IEnumerable<object> sourceList, IList<object> targetList)
         {
-            Queue<object> source = new Queue<object>(sourceList);
-            for (int i = 0; i < targetList.Count; i++)
+            var source = new Queue<object>(sourceList);
+            for (var i = 0; i < targetList.Count; i++)
             {
                 if (source.Count == 0)
                     break;
@@ -75,11 +75,11 @@ namespace LinFu.Delegates
                 if (targetList[i] != Args.Lambda)
                     continue;
 
-                object argument = source.Dequeue();
+                var argument = source.Dequeue();
 
                 if (argument is IDeferredArgument)
                 {
-                    IDeferredArgument deferred = (IDeferredArgument)argument;
+                    var deferred = (IDeferredArgument)argument;
                     argument = deferred.Evaluate();
                 }
                 

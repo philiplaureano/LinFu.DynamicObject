@@ -23,11 +23,11 @@ namespace LinFu.Delegates
             IList<object> curriedList = new List<object>(curriedArguments);
             IList<object> invokeArgList = new List<object>(invokeArguments);
 
-            IList<object> largerList = curriedList.Count > invokeArgList.Count ?
+            var largerList = curriedList.Count > invokeArgList.Count ?
                 curriedList : invokeArgList;
 
             IList<object> combinedArguments = new List<object>();
-            foreach (object arg in largerList)
+            foreach (var arg in largerList)
             {
                 combinedArguments.Add(arg);
             }
@@ -35,7 +35,7 @@ namespace LinFu.Delegates
             AssignArguments(curriedArguments, combinedArguments);
             AssignArguments(invokeArguments, combinedArguments);
 
-            object[] args = new object[combinedArguments.Count];
+            var args = new object[combinedArguments.Count];
             combinedArguments.CopyTo(args, 0);
 
             return _targetDelegate(args);
@@ -44,8 +44,8 @@ namespace LinFu.Delegates
         #endregion
         private static void AssignArguments(IEnumerable<object> sourceList, IList<object> targetList)
         {
-            Queue<object> source = new Queue<object>(sourceList);
-            for (int i = 0; i < targetList.Count; i++)
+            var source = new Queue<object>(sourceList);
+            for (var i = 0; i < targetList.Count; i++)
             {
                 if (source.Count == 0)
                     break;
@@ -53,11 +53,11 @@ namespace LinFu.Delegates
                 if (targetList[i] != Args.Lambda)
                     continue;
 
-                object argument = source.Dequeue();
+                var argument = source.Dequeue();
 
                 if (argument is IDeferredArgument)
                 {
-                    IDeferredArgument deferred = (IDeferredArgument)argument;
+                    var deferred = (IDeferredArgument)argument;
                     argument = deferred.Evaluate();
                 }
 

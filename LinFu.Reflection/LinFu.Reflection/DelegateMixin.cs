@@ -40,7 +40,7 @@ namespace LinFu.Reflection
                 return;
 
             // If the signature is compatible, then execute the method
-            MethodInfo targetMethod = _target.Method;
+            var targetMethod = _target.Method;
 
             object result = null;
             try

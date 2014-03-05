@@ -51,7 +51,7 @@ namespace LinFu.Reflection.Tests
             targetMethod = typeof(MethodFinderTargetDummy).GetMethod("DoSomethingGeneric");
             Assert.IsTrue(targetMethod.IsGenericMethodDefinition);
 
-            Type typeArgument = typeof(int);
+            var typeArgument = typeof(int);
             targetMethod = targetMethod.MakeGenericMethod(typeArgument);
 
             builder.TypeArguments.Add(typeArgument);
@@ -79,7 +79,7 @@ namespace LinFu.Reflection.Tests
         {
             // The target method should have the following signature:
             // public void OverloadedMethod(int arg1, string arg2);
-            Type[] argumentTypes = new Type[] { typeof(int), typeof(string) };
+            Type[] argumentTypes = { typeof(int), typeof(string) };
             targetMethod = typeof(MethodFinderTargetDummy)
                 .GetMethod("OverloadedMethod", argumentTypes);
 
@@ -111,7 +111,7 @@ namespace LinFu.Reflection.Tests
         public void ShouldReturnMatchBasedOnReturnTypeAndParameterTypes()
         {
             targetMethod = typeof(MethodFinderTargetDummy).GetMethod("DoSomething");
-            Type[] argumentTypes = new Type[] { typeof(int), typeof(int) };
+            Type[] argumentTypes = { typeof(int), typeof(int) };
             
             builder.MethodName = "DoSomething";
             builder.ReturnType = typeof(void);
@@ -123,7 +123,7 @@ namespace LinFu.Reflection.Tests
 
         private void RunTest()
         {
-            var methods = new MethodInfo[] {targetMethod};
+            var methods = new[] {targetMethod};
             var pool = methods.AsFuzzyList();
 
             builder.AddPredicates(pool);

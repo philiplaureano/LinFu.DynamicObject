@@ -18,7 +18,7 @@ namespace LinFu.Delegates
             if (!(obj is DelegateInfo))
                 return false;
 
-            DelegateInfo info = (DelegateInfo)obj;
+            var info = (DelegateInfo)obj;
 
             return Compare(this, info);
         }
@@ -26,7 +26,7 @@ namespace LinFu.Delegates
         private static bool Compare(DelegateInfo lhs, DelegateInfo rhs)
         {
             return lhs.ReturnType == rhs.ReturnType &&
-                CompareParameters(lhs, rhs.Parameters) == true;
+                CompareParameters(lhs, rhs.Parameters);
         }
         private static bool CompareParameters(DelegateInfo info, Type[] parameterTypes)
         {
@@ -36,7 +36,7 @@ namespace LinFu.Delegates
             if (info.Parameters.Length != parameterTypes.Length)
                 return false;
 
-            for (int position = 0; position < parameterTypes.Length; position++)
+            for (var position = 0; position < parameterTypes.Length; position++)
             {
                 if (info.Parameters[position] != parameterTypes[position])
                     return false;

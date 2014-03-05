@@ -13,7 +13,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldBeAbleToShareTheSameDynamicType()
         {
-            var typeSpec = new TypeSpec() { Name = "Person" };
+            var typeSpec = new TypeSpec { Name = "Person" };
 
             // Add an age property 
             typeSpec.AddProperty("Age", typeof(int));
@@ -27,8 +27,8 @@ namespace LinFu.Reflection.Tests
             second += personType;
 
             // Use both objects as persons
-            IPerson firstPerson = first.CreateDuck<IPerson>();
-            IPerson secondPerson = second.CreateDuck<IPerson>();
+            var firstPerson = first.CreateDuck<IPerson>();
+            var secondPerson = second.CreateDuck<IPerson>();
 
             firstPerson.Age = 18;
             secondPerson.Age = 21;
@@ -38,8 +38,8 @@ namespace LinFu.Reflection.Tests
 
             // Change the type so that it supports the INameable interface
             typeSpec.AddProperty("Name", typeof(string));
-            INameable firstNameable = first.CreateDuck<INameable>();
-            INameable secondNameable = second.CreateDuck<INameable>();
+            var firstNameable = first.CreateDuck<INameable>();
+            var secondNameable = second.CreateDuck<INameable>();
 
             firstNameable.Name = "Foo";
             secondNameable.Name = "Bar";

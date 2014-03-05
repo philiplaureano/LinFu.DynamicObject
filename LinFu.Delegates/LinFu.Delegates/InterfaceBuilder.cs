@@ -28,26 +28,26 @@ namespace LinFu.Delegates
         }
         public Type CreateInterface()
         {
-            AssemblyName assemblyName = new AssemblyName();
+            var assemblyName = new AssemblyName();
             assemblyName.Name = Guid.NewGuid().ToString();
 
-            string moduleName = assemblyName.Name;
-            AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
-            ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule(moduleName, string.Format("{0}.mod", moduleName), true);
+            var moduleName = assemblyName.Name;
+            var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
+            var moduleBuilder = assemblyBuilder.DefineDynamicModule(moduleName, string.Format("{0}.mod", moduleName), true);
 
-            TypeAttributes attributes = TypeAttributes.Public | TypeAttributes.Interface |
+            var attributes = TypeAttributes.Public | TypeAttributes.Interface |
                                         TypeAttributes.AutoClass | TypeAttributes.AnsiClass
                                         | TypeAttributes.Abstract;
 
-            TypeBuilder typeBuilder = moduleBuilder.DefineType(_interfaceName, attributes);
+            var typeBuilder = moduleBuilder.DefineType(_interfaceName, attributes);
 
-            MethodAttributes methodAttributes = MethodAttributes.Public | MethodAttributes.NewSlot
+            var methodAttributes = MethodAttributes.Public | MethodAttributes.NewSlot
                                                 | MethodAttributes.HideBySig | MethodAttributes.Virtual |
                                                 MethodAttributes.Abstract;
 
-            foreach (InterfaceMethodInfo info in _methods)
+            foreach (var info in _methods)
             {
-                MethodBuilder method = typeBuilder.DefineMethod(info.MethodName, methodAttributes, info.ReturnType, info.ArgumentTypes);
+                var method = typeBuilder.DefineMethod(info.MethodName, methodAttributes, info.ReturnType, info.ArgumentTypes);
                 method.SetImplementationFlags(MethodImplAttributes.Managed | MethodImplAttributes.IL);
             }
 
@@ -55,7 +55,7 @@ namespace LinFu.Delegates
         }
         public void AddMethod(string methodName, Type returnType, Type[] parameters)
         {
-            InterfaceMethodInfo info = new InterfaceMethodInfo();
+            var info = new InterfaceMethodInfo();
             info.MethodName = methodName;
             info.ReturnType = returnType;
             info.ArgumentTypes = parameters;
@@ -65,11 +65,11 @@ namespace LinFu.Delegates
         public static Type DefineInterfaceMethod(Type returnType, Type[] parameters)
         {
             // Reuse the previously cached results
-            InterfaceInfo cacheKey = new InterfaceInfo(returnType, parameters);
+            var cacheKey = new InterfaceInfo(returnType, parameters);
             if (_cache.ContainsKey(cacheKey))
                 return _cache[cacheKey];
 
-            Type result = CreateInterface(returnType, parameters);
+            var result = CreateInterface(returnType, parameters);
 
             // Cache the results
             if (result != null)
@@ -80,14 +80,14 @@ namespace LinFu.Delegates
 
         private static Type CreateInterface(Type returnType, Type[] parameters)
         {
-            string interfaceName = "IAnonymous";
-            string methodName = "AnonymousMethod";
+            var interfaceName = "IAnonymous";
+            var methodName = "AnonymousMethod";
             return CreateInterface(interfaceName, methodName, returnType, parameters);
         }
 
         private static Type CreateInterface(string interfaceName, string methodName, Type returnType, Type[] parameters)
         {
-            InterfaceBuilder builder = new InterfaceBuilder(interfaceName);
+            var builder = new InterfaceBuilder(interfaceName);
             builder.AddMethod(methodName, returnType, parameters);
 
             return builder.CreateInterface();

@@ -13,7 +13,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldBeAbleToCallPropertySetterOnExpandoObject()
         {
-            int expectedValue = 12345;
+            var expectedValue = 12345;
             CustomDelegate setterBody = args =>
                                             {
                                                 var value = args[0];
@@ -31,7 +31,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldBeAbleToCallCovariantPropertySetterOnExpandoObject()
         {
-            int expectedValue = 12345;
+            var expectedValue = 12345;
             CustomDelegate setterBody = args =>
             {
                 var value = args[0];
