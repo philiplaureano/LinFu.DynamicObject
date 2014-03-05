@@ -57,16 +57,10 @@ namespace LinFu.Reflection
             set { _target = value; }
         }
 
-        #region IInterceptor Members
-
         public object Intercept(InvocationInfo info)
         {
             return Methods[info.TargetMethod.Name](info.Arguments);
         }
-
-        #endregion
-
-        #region IMethodMissingCallback Members
 
         public void MethodMissing(object source, MethodMissingParameters missingParameters)
         {
@@ -114,8 +108,6 @@ namespace LinFu.Reflection
             return found;
         }
 
-        #endregion
-
         internal object ExecuteMethodMissing(string methodName, object[] args, ref bool handled)
         {
             if (_handlers.Count == 0)
@@ -129,8 +121,12 @@ namespace LinFu.Reflection
             var missingParameters =
                 new MethodMissingParameters(methodName, _target, args);
 
+            // Recently added handlers take priority
+            var handlers = new List<IMethodMissingCallback>(_handlers);
+            handlers.Reverse();
+
             // Fire the event until a handler is found 
-            foreach (IMethodMissingCallback callback in _handlers)
+            foreach (IMethodMissingCallback callback in handlers)
             {
                 callback.MethodMissing(this, missingParameters);
                 if (missingParameters.Handled)

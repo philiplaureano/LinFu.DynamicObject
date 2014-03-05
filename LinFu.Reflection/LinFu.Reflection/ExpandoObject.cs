@@ -53,7 +53,7 @@ namespace LinFu.Reflection
             }
             catch (MethodNotFoundException ex)
             {
-                var isDelegate = value is MulticastDelegate && value != null;
+                var isDelegate = value is MulticastDelegate;
                 if (!isDelegate)
                     throw;
 

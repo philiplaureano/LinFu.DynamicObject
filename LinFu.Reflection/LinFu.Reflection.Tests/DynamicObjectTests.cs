@@ -145,7 +145,6 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void CanCreateADynamicAdder()
         {
-            var adder = new DynamicObject();
             CustomDelegate addBody = delegate(object[] args)
             {
                 int a = (int)args[0];
@@ -163,7 +162,7 @@ namespace LinFu.Reflection.Tests
             Assert.IsTrue(linfuDynamicObject.LooksLike<ICanAdd>());
 
             // ...then it must be a duck, right?
-            var somethingThatCanAdd = new SomethingThatAdds(adder.CreateDuck<ICanAdd>());
+            var somethingThatCanAdd = new SomethingThatAdds(linfuDynamicObject.CreateDuck<ICanAdd>());
             somethingThatCanAdd.FirstNumber = 10;
             somethingThatCanAdd.SecondNumber = 20;
             Assert.AreEqual(somethingThatCanAdd.AddNumbers(), 30);
