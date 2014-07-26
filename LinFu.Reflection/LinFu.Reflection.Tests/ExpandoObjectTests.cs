@@ -14,7 +14,7 @@ namespace LinFu.Reflection.Tests
         public void ShouldBeAbleToCallPropertySetterOnExpandoObject()
         {
             var expectedValue = 12345;
-            CustomDelegate setterBody = args =>
+            Func<object[], object> setterBody = args =>
                                             {
                                                 var value = args[0];
                                                 Assert.AreEqual(value, expectedValue);
@@ -32,7 +32,7 @@ namespace LinFu.Reflection.Tests
         public void ShouldBeAbleToCallCovariantPropertySetterOnExpandoObject()
         {
             var expectedValue = 12345;
-            CustomDelegate setterBody = args =>
+            Func<object[], object> setterBody = args =>
             {
                 var value = args[0];
                 Assert.AreEqual(value, expectedValue);

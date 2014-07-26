@@ -149,7 +149,7 @@ namespace LinFu.Reflection
             _handlers.Add(new DelegateMixin(methodName, body));
         }
 
-        public void AddMethod(string methodName, CustomDelegate body, Type returnType, params Type[] parameters)
+        public void AddMethod(string methodName, Func<object[], object> body, Type returnType, params Type[] parameters)
         {
             var stronglyTypedDelegate = DelegateFactory.DefineDelegate(body, returnType, parameters);
             if (stronglyTypedDelegate == null)

@@ -62,8 +62,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LinFu.Delegates">
+      <HintPath>..\packages\LinFu.Delegates.1.0.0.32889\lib\net45\LinFu.Delegates.pdb\LinFu.Delegates.dll</HintPath>
+    </Reference>
     <Reference Include="LinFu.DynamicProxy">
-      <HintPath>..\..\lib\LinFu.DynamicProxy.dll</HintPath>
+      <HintPath>..\packages\LinFu.DynamicProxy.OfficialRelease.1.0.5\lib\net\LinFu.DynamicProxy.dll</HintPath>
     </Reference>
     <Reference Include="LinFu.Finders">
       <HintPath>..\..\lib\LinFu.Finders.dll</HintPath>
@@ -100,10 +103,6 @@
     <Compile Include="SomethingThatAdds.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\LinFu.Delegates\LinFu.Delegates\LinFu.Delegates.csproj">
-      <Project>{65A26586-FE64-411D-999D-EC328DFF8986}</Project>
-      <Name>LinFu.Delegates</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\LinFu.Reflection.Extensions\LinFu.Reflection.Extensions.csproj">
       <Project>{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}</Project>
       <Name>LinFu.Reflection.Extensions</Name>
@@ -131,6 +130,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

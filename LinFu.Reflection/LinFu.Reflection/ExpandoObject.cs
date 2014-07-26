@@ -49,7 +49,7 @@ namespace LinFu.Reflection
             var methodName = string.Format("set_{0}", propertyName);
             try
             {
-                _target.Methods[methodName](value);
+                _target.Methods[methodName](new []{value});
             }
             catch (MethodNotFoundException ex)
             {

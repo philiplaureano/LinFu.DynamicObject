@@ -65,13 +65,13 @@ namespace LinFu.Reflection
             {
                 var methodName = string.Format("get_{0}", propertyName);
                 IObjectMethods methods = this;
-                return methods[methodName]();
+                return methods[methodName](new object[0]);
             }
             set
             {
                 var methodName = string.Format("set_{0}", propertyName);
                 IObjectMethods methods = this;
-                methods[methodName](value);
+                methods[methodName](new[] { value });
             }
         }
     }

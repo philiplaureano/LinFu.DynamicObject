@@ -15,7 +15,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldBeAbleToUseCLRDynamicObjectsAsExpandoObjects()
         {
-            CustomDelegate body = args => 42;
+            Func<object[], object> body = args => 42;
 
             var dynamicObject = new LinFu.Reflection.DynamicObject(new object());
             dynamicObject.AddMethod("GetFoo", body, typeof(int));
@@ -126,7 +126,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldBeAbleToAddMethodsUsingRuntimeAnonymousDelegates()
         {
-            CustomDelegate addBody = delegate(object[] args)
+            Func<object[], object> addBody = delegate(object[] args)
                                          {
                                              var a = (int)args[0];
                                              var b = (int)args[1];
@@ -145,7 +145,7 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void CanCreateADynamicAdder()
         {
-            CustomDelegate addBody = delegate(object[] args)
+            Func<object[], object> addBody = delegate(object[] args)
             {
                 var a = (int)args[0];
                 var b = (int)args[1];
