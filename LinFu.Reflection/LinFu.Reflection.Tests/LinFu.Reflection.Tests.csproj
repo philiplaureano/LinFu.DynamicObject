@@ -62,6 +62,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FakeItEasy">
+      <HintPath>..\packages\FakeItEasy.1.22.0\lib\net40\FakeItEasy.dll</HintPath>
+    </Reference>
     <Reference Include="LinFu.Delegates">
       <HintPath>..\packages\LinFu.Delegates.1.0.0.32889\lib\net45\LinFu.Delegates.pdb\LinFu.Delegates.dll</HintPath>
     </Reference>
@@ -72,9 +75,6 @@
       <HintPath>..\packages\LinFu.Finders.1.0.1\lib\LinFu.Finders.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NMock2">
-      <HintPath>..\..\lib\NMock2.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>

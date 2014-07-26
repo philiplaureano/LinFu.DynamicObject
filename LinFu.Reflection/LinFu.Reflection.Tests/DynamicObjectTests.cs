@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
+using FakeItEasy;
 using LinFu.Delegates;
-using NMock2;
 using NUnit.Framework;
-using Is = NMock2.Is;
 
 namespace LinFu.Reflection.Tests
 {    
@@ -77,11 +76,12 @@ namespace LinFu.Reflection.Tests
         [Test]
         public void ShouldAssignSelfToMixinAwareInstance()
         {
-            var test = mock.NewMock<IMixinAware>();
+            var test = A.Fake<IMixinAware>();
             var dynamic = new DynamicObject(new object());
-            Expect.Once.On(test).SetProperty("Self").To(dynamic);
 
+            var values = new List<object>();
             dynamic.MixWith(test);
+            A.CallTo(test).Where(x => x.Method.Name == "set_Self").WithAnyArguments().MustHaveHappened();
         }
 
         [Test]
