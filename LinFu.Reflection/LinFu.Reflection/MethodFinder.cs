@@ -14,10 +14,12 @@ namespace LinFu.Reflection
 
         public MethodInfo Find(string methodName, Type targetType, object[] args)
         {
-            var builder = new PredicateBuilder();
-            builder.MethodName = methodName;
-            builder.MatchParameters = true;
-            builder.MatchCovariantParameterTypes = true;
+            var builder = new PredicateBuilder
+            {
+                MethodName = methodName,
+                MatchParameters = true,
+                MatchCovariantParameterTypes = true
+            };
 
             // Find the method that has a compatible signature
             // and a matching method name
@@ -32,7 +34,7 @@ namespace LinFu.Reflection
             builder.AddPredicates(cachedSearchList);
 
             // Search for any previous matches
-            var tolerance = .66;
+            const double tolerance = .66;
             var bestMatch = cachedSearchList.BestMatch(tolerance);
 
             MethodInfo result = null;

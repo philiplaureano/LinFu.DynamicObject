@@ -69,7 +69,7 @@
       <HintPath>..\packages\LinFu.DynamicProxy.OfficialRelease.1.0.5\lib\net\LinFu.DynamicProxy.dll</HintPath>
     </Reference>
     <Reference Include="LinFu.Finders">
-      <HintPath>..\..\lib\LinFu.Finders.dll</HintPath>
+      <HintPath>..\packages\LinFu.Finders.1.0.1\lib\LinFu.Finders.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NMock2">
@@ -103,10 +103,6 @@
     <Compile Include="SomethingThatAdds.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\LinFu.Reflection.Extensions\LinFu.Reflection.Extensions.csproj">
-      <Project>{4C3D5EFA-51C5-455F-ABDE-B2488AC3A76A}</Project>
-      <Name>LinFu.Reflection.Extensions</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LinFu.Reflection\LinFu.Reflection.csproj">
       <Project>{CD5E9841-5A3C-47E4-BADC-9CA297AA7948}</Project>
       <Name>LinFu.Reflection</Name>
@@ -130,7 +126,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
