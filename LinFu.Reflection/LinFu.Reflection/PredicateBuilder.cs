@@ -12,14 +12,12 @@ namespace LinFu.Reflection
         private readonly List<object> _arguments = new List<object>();
         private readonly List<ParameterInfo> _parameterTypes = new List<ParameterInfo>();
         private readonly List<Type> _typeArguments = new List<Type>();
-        private bool? _isProtected;
-        private bool? _isPublic;
-        private bool _matchCovariantParameterTypes = true;
-        private bool _matchCovariantReturnType;
-        private bool _matchParameters = true;
-        private bool _matchRuntimeArguments;
-        private string _methodName;
-        private Type _returnType;
+
+        public PredicateBuilder()
+        {
+            MatchCovariantParameterTypes = true;
+            MatchParameters = true;
+        }
 
         public List<Type> ArgumentTypes
         {
@@ -31,17 +29,9 @@ namespace LinFu.Reflection
             get { return _arguments; }
         }
 
-        public string MethodName
-        {
-            get { return _methodName; }
-            set { _methodName = value; }
-        }
+        public string MethodName { get; set; }
 
-        public Type ReturnType
-        {
-            get { return _returnType; }
-            set { _returnType = value; }
-        }
+        public Type ReturnType { get; set; }
 
         public List<ParameterInfo> ParameterTypes
         {
@@ -53,50 +43,23 @@ namespace LinFu.Reflection
             get { return _typeArguments; }
         }
 
-        public bool? IsPublic
-        {
-            get { return _isPublic; }
-            set { _isPublic = value; }
-        }
+        public bool? IsPublic { get; set; }
 
-        public bool? IsProtected
-        {
-            get { return _isProtected; }
-            set { _isProtected = value; }
-        }
+        public bool? IsProtected { get; set; }
 
-        public bool MatchCovariantReturnType
-        {
-            get { return _matchCovariantReturnType; }
-            set { _matchCovariantReturnType = value; }
-        }
+        public bool MatchCovariantReturnType { get; set; }
 
-        public bool MatchParameters
-        {
-            get { return _matchParameters; }
-            set { _matchParameters = value; }
-        }
+        public bool MatchParameters { get; set; }
 
         public bool MatchParameterTypes { get; set; }
 
-        public bool MatchCovariantParameterTypes
-        {
-            get { return _matchCovariantParameterTypes; }
-            set { _matchCovariantParameterTypes = value; }
-        }
+        public bool MatchCovariantParameterTypes { get; set; }
 
-        public bool MatchRuntimeArguments
-        {
-            get { return _matchRuntimeArguments; }
-            set { _matchRuntimeArguments = value; }
-        }
+        public bool MatchRuntimeArguments { get; set; }
 
         public static void AddPredicates(IList<IFuzzyItem<MethodInfo>> list, MethodInfo method)
         {
             var builder = new PredicateBuilder { MatchParameters = true, MethodName = method.Name, MatchRuntimeArguments = true };
-
-            //if (args != null && args.Length > 0)
-            //    builder.RuntimeArguments.Add(args);
 
             foreach (var param in method.GetParameters())
             {
@@ -159,7 +122,7 @@ namespace LinFu.Reflection
                     if (argument != null)
                     {
                         var argumentType = argument.GetType();
-                        var matchCovariantParameterTypes = _matchCovariantParameterTypes;
+                        var matchCovariantParameterTypes = MatchCovariantParameterTypes;
                         AddParameterPredicate(position, argumentType, matchCovariantParameterTypes, methods);
                         typeMap[position] = argumentType;
                     }
@@ -259,20 +222,20 @@ namespace LinFu.Reflection
             return checkResult;
         }
 
-        private void ShouldMatchProtectedMethods(IList<IFuzzyItem<MethodInfo>> methods)
+        private void ShouldMatchProtectedMethods(IEnumerable<IFuzzyItem<MethodInfo>> methods)
         {
-            if (_isProtected == null)
+            if (IsProtected == null)
                 return;
 
-            Func<MethodInfo, bool> isProtectedMethod = method => method.IsFamily == _isProtected;
+            Func<MethodInfo, bool> isProtectedMethod = method => method.IsFamily == IsProtected;
             methods.AddCriteria(isProtectedMethod);
         }
 
-        private void ShouldMatchPublicMethods(IList<IFuzzyItem<MethodInfo>> methods)
+        private void ShouldMatchPublicMethods(IEnumerable<IFuzzyItem<MethodInfo>> methods)
         {
-            if (_isPublic == null)
+            if (IsPublic == null)
                 return;
-            Func<MethodInfo, bool> isPublic = method => method.IsPublic == _isPublic;
+            Func<MethodInfo, bool> isPublic = method => method.IsPublic == IsPublic;
             methods.AddCriteria(isPublic);
         }
 
@@ -330,7 +293,7 @@ namespace LinFu.Reflection
 
         private void ShouldMatchParameters(IList<IFuzzyItem<MethodInfo>> methods)
         {
-            if (_matchParameters && _parameterTypes.Count > 0)
+            if (MatchParameters && _parameterTypes.Count > 0)
             {
                 var currentParameters = _parameterTypes.ToArray();
 
@@ -345,7 +308,7 @@ namespace LinFu.Reflection
                                                                     return parameterCount == count;
                                                                 };
 
-                var covariant = _matchCovariantParameterTypes;
+                var covariant = MatchCovariantParameterTypes;
 
                 // Match the parameter types
                 ShouldMatchParameterTypes(currentParameters, covariant, methods);
@@ -354,7 +317,7 @@ namespace LinFu.Reflection
 
 
             // Check for zero parameters
-            if (_matchParameters && _parameterTypes.Count == 0 && !_matchRuntimeArguments)
+            if (MatchParameters && _parameterTypes.Count == 0 && !MatchRuntimeArguments)
             {
                 Func<MethodInfo, bool> hasZeroParameters = delegate(MethodInfo currentMethod)
                               {
@@ -383,26 +346,26 @@ namespace LinFu.Reflection
 
         private void ShouldMatchReturnType(IList<IFuzzyItem<MethodInfo>> methods)
         {
-            if (_returnType == null)
+            if (ReturnType == null)
                 return;
 
-            Func<MethodInfo, bool> hasSpecificReturnType = method => method.ReturnType == _returnType;
+            Func<MethodInfo, bool> hasSpecificReturnType = method => method.ReturnType == ReturnType;
             methods.AddCriteria(hasSpecificReturnType);
 
-            if (!_matchCovariantReturnType)
+            if (!MatchCovariantReturnType)
                 return;
 
-            Func<MethodInfo, bool> hasCovariantReturnType = method => method.ReturnType.IsAssignableFrom(_returnType);
+            Func<MethodInfo, bool> hasCovariantReturnType = method => method.ReturnType.IsAssignableFrom(ReturnType);
             methods.AddCriteria(hasCovariantReturnType);
         }
 
-        private void ShouldMatchMethodName(IList<IFuzzyItem<MethodInfo>> methods)
+        private void ShouldMatchMethodName(IEnumerable<IFuzzyItem<MethodInfo>> methods)
         {
-            if (string.IsNullOrEmpty(_methodName))
+            if (string.IsNullOrEmpty(MethodName))
                 return;
 
             Func<MethodInfo, bool> shouldMatchMethodName =
-                method => method.Name == _methodName;
+                method => method.Name == MethodName;
 
             // Results that match the method name will get a higher
             // score

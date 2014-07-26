@@ -12,5 +12,11 @@ namespace LinFu.Reflection
         {
             return new ExpandoObject(target);
         }
+        
+        public static DynamicObject AddExtensionClass(this DynamicObject dynamicObject, Type extensionClassType)
+        {
+            dynamicObject += new ExtensionMethodsFrom(extensionClassType);
+            return dynamicObject;
+        }
     }
 }

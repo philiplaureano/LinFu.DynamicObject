@@ -97,6 +97,7 @@
     <Compile Include="DynamicObject.cs" />
     <Compile Include="DynamicObjectExtensions.cs" />
     <Compile Include="ExpandoObject.cs" />
+    <Compile Include="ExtensionMethodsFrom.cs" />
     <Compile Include="Extensions\ActionExtensions.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />

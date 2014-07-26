@@ -99,6 +99,7 @@
     <Compile Include="PredicateBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RubberDucky.cs" />
+    <Compile Include="SampleExtensionMethods.cs" />
     <Compile Include="SecondClass.cs" />
     <Compile Include="SomethingThatAdds.cs" />
   </ItemGroup>

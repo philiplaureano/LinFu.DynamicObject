@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using LinFu.Delegates;
 using LinFu.DynamicProxy;
@@ -95,17 +96,7 @@ namespace LinFu.Reflection
             if (match != null)
                 return true;
 
-            var found = false;
-            foreach (var callback in _handlers)
-            {
-                if (!callback.CanHandle(method))
-                    continue;
-
-                found = true;
-                break;
-            }
-
-            return found;
+            return _handlers.Any(callback => callback.CanHandle(method));
         }
 
         internal object ExecuteMethodMissing(string methodName, object[] args, ref bool handled)
@@ -244,17 +235,9 @@ namespace LinFu.Reflection
                 if (compatibleMethod != null)
                     continue;
 
-                var canHandleMethod = false;
+                var canHandleMethod = _handlers.Any(callback => callback.CanHandle(method));
 
                 // If the search fails, we need to query for a replacement
-                foreach (var callback in _handlers)
-                {
-                    if (!callback.CanHandle(method))
-                        continue;
-
-                    canHandleMethod = true;
-                    break;
-                }
 
                 if (canHandleMethod)
                     continue;

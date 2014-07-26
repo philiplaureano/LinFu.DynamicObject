@@ -16,13 +16,26 @@ namespace LinFu.Reflection.Tests
         {
             Func<object[], object> body = args => 42;
 
-            var dynamicObject = new LinFu.Reflection.DynamicObject(new object());
+            var dynamicObject = new DynamicObject(new object());
             dynamicObject.AddMethod("GetFoo", body, typeof(int));
 
             dynamic expando = dynamicObject.AsExpandoObject();
 
             int result = expando.GetFoo();
             Assert.AreEqual(42, result);
+        }
+
+        [Test]
+        public void ShouldBeAbleToAddExtensionMethodsIntoDynamicObjects()
+        {            
+            var dynamicObject = new DynamicObject(new RubberDucky());
+            dynamicObject.AddExtensionClass(typeof (SampleExtensionMethods));
+
+            dynamic expando = dynamicObject.AsExpandoObject();
+
+            SampleExtensionMethods.ResetCallCounter();
+            int result = expando.IncrementCounter();
+            Assert.AreEqual(1, result);
         }
 
         [Test]
