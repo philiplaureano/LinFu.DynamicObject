@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinFu.Reflection", "LinFu.Reflection\LinFu.Reflection.csproj", "{CD5E9841-5A3C-47E4-BADC-9CA297AA7948}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinFu.Reflection.Tests", "LinFu.Reflection.Tests\LinFu.Reflection.Tests.csproj", "{2A6AB739-7160-46AC-93C1-12E3DC2A004D}"
@@ -10,6 +12,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7F2DC3
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuSpecs", "NuSpecs", "{024D0946-D57B-4926-8181-A79FFA9706EA}"
+	ProjectSection(SolutionItems) = preProject
+		LinFu.Reflection.nuspec = LinFu.Reflection.nuspec
 	EndProjectSection
 EndProject
 Global

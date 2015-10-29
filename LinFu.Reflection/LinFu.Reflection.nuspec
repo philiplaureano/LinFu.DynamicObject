@@ -1,24 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-    <metadata>
-        <id>LinFu.Reflection</id>
-        <version>$version$</version>
-        <title>LinFu.Reflection</title>
-        <authors>Philip Laureano</authors>
-        <owners>Philip Laureano</owners>
-        <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
-        <projectUrl>https://github.com/philiplaureano/LinFu.DynamicObject</projectUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>A library that adds strongly-typed duck typing, dynamic expando objects, and dynamic metaclasses to the common language runtime.</description>
-        <summary>A library that adds strongly-typed duck typing, dynamic expando objects, and dynamic metaclasses to the common language runtime.</summary>
-        <copyright>Copyright © 2014 Philip Laureano</copyright>
-        <tags>linfu dynamic expando metaprogramming clr</tags>
-        <dependencies>
-            <dependency id="LinFu.Delegates" version="1.0.0.32889" />
-            <dependency id="LinFu.Finders" version="1.0.1" />
-        </dependencies>
-    </metadata>
-    <files>
-        <file src="bin\Debug\LinFu.Reflection.dll" target="lib\net45\LinFu.Reflection.dll" />
-    </files>
+  <metadata>
+    <id>LinFu.Reflection</id>
+    <version>$version$</version>
+    <title>LinFu.Reflection</title>
+    <authors>Philip Laureano</authors>
+    <owners>Philip Laureano</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/philiplaureano/LinFu.DynamicObject</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A library that adds strongly-typed duck typing, dynamic expando objects, and dynamic metaclasses to the common language runtime.</description>
+    <summary>A library that adds strongly-typed duck typing, dynamic expando objects, and dynamic metaclasses to the common language runtime.</summary>
+    <copyright>Copyright © 2015 Philip Laureano</copyright>
+    <tags>linfu dynamic expando metaprogramming clr</tags>
+    <dependencies>
+      <dependency id="LinFu.Delegates" version="1.0.0.32889" />
+      <dependency id="LinFu.Finders" version="1.0.1" />
+      <dependency id="LinFu.DynamicProxy.OfficialRelease" version="1.0.5"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Debug\LinFu.Reflection.dll" target="lib\net45\LinFu.Reflection.dll" />
+  </files>
 </package>
